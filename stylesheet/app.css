@@ -253,9 +253,3 @@ code {
     background: rgba(255,255,255,0.1);
     padding: 1px 4px;
 }
-
-/* ─── btn_group column ─── */
-.btn_group {
-    flex-direction: column;
-    gap: 4px;
-}
