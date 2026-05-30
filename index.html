@@ -1,1023 +1,849 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <base href="./">
     <meta charset="UTF-8">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <link href="./stylesheet/loading_mask.css" rel="stylesheet">
-    <link href="./stylesheet/public_style.css" rel="stylesheet">
     <link href="./stylesheet/oreui.css" rel="stylesheet">
     <link href="./stylesheet/app.css" rel="stylesheet">
     <title>BE Skin 4D Maker</title>
 </head>
-<body>
 
-<!-- Loading Mask -->
 <div class="loading_mask" id="loading_mask">
-    <img alt="Loading" src="./images/Loading_white.gif" style="height:64px;">
-</div>
-
-<display-area>
-
-    <!-- Header -->
-    <header>
-        <div class="header_left">
-            <button class="header_item header_item_left" id="back_btn" onclick="goBack()" style="display:none;">
-                <img alt="Back" class="header_left_icon" src="./images/icons/back.svg" onerror="this.style.display='none'">
-            </button>
-        </div>
-        <div class="header_logo">
-            <span class="header_title" style="font-family:'Minecraft Ten',sans-serif;font-size:18px;color:#1E1E1F;">
-                ⛏ BE Skin 4D Maker
-            </span>
-        </div>
-        <div class="header_right"></div>
-    </header>
-
-    <!-- Main Body -->
-    <display-body>
-        <scroll-view>
-            <scroll-container id="app_container">
-                <main id="main_content">
-                    <!-- Pages injected here by JS -->
-                </main>
-            </scroll-container>
-        </scroll-view>
-    </display-body>
-
-</display-area>
-
-<!-- Toast Notification -->
-<div id="toast" class="toast_container" style="display:none;"></div>
-
-<!-- Overlay -->
-<div class="overlay" id="overlay" onclick="closeOverlay()"></div>
-
-<!-- Modal Dialog -->
-<div id="modal_dialog" class="modal_wrapper" style="display:none;">
-    <div class="modal_box">
-        <div class="modal_title" id="modal_title"></div>
-        <div class="modal_body" id="modal_body"></div>
-        <div class="modal_actions" id="modal_actions"></div>
+    <div>
+        <div class="spinner"><img alt="" src="./images/Loading_white.gif" style="height:48px;"/></div>
+        <div class="spinner"><div class="spinner"><span style="color:rgba(255,255,255,0.6);font-family:'NotoSans Bold',sans-serif;font-size:13px;">BE Skin 4D Maker</span></div></div>
     </div>
 </div>
+
+<body>
+<dispaly-area>
+    <header>
+        <div class="header_left">
+            <div class="header_item header_item_left" id="btn_back" onclick="goBack()" style="display:none;cursor:pointer;">
+                <span class="header_left_icon" style="font-size:20px;padding:0 10px;">‹</span>
+            </div>
+        </div>
+        <div class="header_logo">
+            <div class="header_title" style="font-family:'Minecraft Ten',sans-serif;font-size:17px;color:#1E1E1F;letter-spacing:0.5px;">
+                ⛏ BE Skin 4D Maker
+            </div>
+        </div>
+        <div class="header_right">
+            <div class="header_item header_item_right" onclick="showAbout()" style="cursor:pointer;">
+                <img alt="info" class="header_right_icon" src="./images/Github.png" style="height:24px;width:24px;object-fit:contain;"/>
+            </div>
+        </div>
+    </header>
+
+    <display-body>
+        <scroll-view class="main_scroll_view">
+            <scroll-container class="primary_scroll_container" id="scroll_root">
+                <main class="scroll_container" id="main_content">
+                    <!-- injected by JS -->
+                </main>
+            </scroll-container>
+            <custom-scrollbar class="primary_custom_scrollbar">
+                <custom-scrollbar-track></custom-scrollbar-track>
+                <custom-scrollbar-thumb></custom-scrollbar-thumb>
+            </custom-scrollbar>
+        </scroll-view>
+    </display-body>
+</dispaly-area>
+
+<!-- Modal -->
+<div class="overlay" id="modal_overlay" onclick="closeModal()"></div>
+<modal_area id="modal_area" class="normal_modal" style="display:none;">
+    <modal>
+        <modal_title_area>
+            <modal_title id="modal_title_text">Title</modal_title>
+            <modal_close_btn onclick="closeModal()">
+                <span style="font-size:18px;color:#fff;">✕</span>
+            </modal_close_btn>
+        </modal_title_area>
+        <modal_content id="modal_content_area"></modal_content>
+        <modal_button_area>
+            <modal_button_group id="modal_btn_group" style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:4px 0;">
+            </modal_button_group>
+        </modal_button_area>
+    </modal>
+</modal_area>
+
+<!-- Toast / Pop -->
+<div class="pop_area" id="pop_area"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
-
-// ─────────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────────
-const state = {
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+const S = {
     page: 'welcome',
-    pageHistory: [],
-    packName: 'My4DSkinPack',
-    packSerializeName: 'my4dskinpack',
-    packLocalizationName: 'my4dskinpack',
+    history: [],
+    packName: 'My 4D Skin Pack',
+    serializeName: 'my4dskinpack',
+    localizationName: 'my4dskinpack',
     geometryFile: null,
     geometryData: null,
     skins: [],
-    editingIndex: -1,
+    editIdx: -1,
+    editBuf: null,
 };
 
-const KNOWN_GEOMETRIES = [
-    { label: 'Standard Slim (humanoid.customSlim)', value: 'geometry.humanoid.customSlim' },
-    { label: 'Standard Wide (humanoid.custom)', value: 'geometry.humanoid.custom' },
-    { label: 'Wolf / Animal Ears (WolfTumbler)', value: 'geometry.MiniGameMasters.WolfTumbler' },
-    { label: 'Tuxedo Cat (PawsAndClaws)', value: 'geometry.PawsAndClaws.tuxedocat' },
-    { label: 'Dragon - Longmu (ChineseMythology)', value: 'geometry.ChineseMythology.DragonMotherGoddessLongmu' },
-    { label: 'Snake Goddess - Nuwa (ChineseMythology)', value: 'geometry.ChineseMythology.SnakeCelestialGoddessNuwa' },
-    { label: 'Moon Rabbit (ChineseMythology)', value: 'geometry.ChineseMythology.MoonSpiritJadeRabbit' },
-    { label: 'Vermillion Bird (ChineseMythology)', value: 'geometry.ChineseMythology.SouthernSymbolVermillionBird' },
-    { label: 'Guanyin (ChineseMythology)', value: 'geometry.ChineseMythology.Guanyin' },
-    { label: 'Ratatoskr Squirrel (NorseMythology)', value: 'geometry.NorseMythology.Ratatoskr' },
-    { label: 'Classy Beachwear (BeachParty)', value: 'geometry.BeachPartySkinPack.ClassyBeachwear' },
-    { label: 'Tomte (HolidaySkinPack2015)', value: 'geometry.HolidaySkinPack2015.Tomte' },
-    { label: 'ShyGuy (MarioBrothers)', value: 'geometry.MarioBrothers.ShyGuy' },
-    { label: 'Cat Glider Hero (MiniGameHeroes)', value: 'geometry.MiniGameHeroes.MiniGameHeroesCatGlider' },
-    { label: 'Princess Bubblegum (AdventureTime)', value: 'geometry.MashupAdventureTime.PrincessBubblegum' },
-    { label: '✏️ Custom (type manually)', value: '__custom__' },
+const GEOMS = [
+    ['geometry.humanoid.customSlim',   'Standard Slim (customSlim)'],
+    ['geometry.humanoid.custom',       'Standard Wide (custom)'],
+    ['geometry.MiniGameMasters.WolfTumbler', 'Wolf / Animal Ears (WolfTumbler)'],
+    ['geometry.PawsAndClaws.tuxedocat','Tuxedo Cat (PawsAndClaws)'],
+    ['geometry.ChineseMythology.DragonMotherGoddessLongmu','Dragon — Longmu'],
+    ['geometry.ChineseMythology.SnakeCelestialGoddessNuwa','Snake Goddess — Nuwa'],
+    ['geometry.ChineseMythology.MoonSpiritJadeRabbit','Moon Rabbit'],
+    ['geometry.ChineseMythology.SouthernSymbolVermillionBird','Vermillion Bird'],
+    ['geometry.ChineseMythology.Guanyin','Guanyin'],
+    ['geometry.NorseMythology.Ratatoskr','Ratatoskr Squirrel'],
+    ['geometry.BeachPartySkinPack.ClassyBeachwear','Classy Beachwear'],
+    ['geometry.HolidaySkinPack2015.Tomte','Tomte (Holiday 2015)'],
+    ['geometry.MarioBrothers.ShyGuy','Shy Guy (Mario Bros)'],
+    ['geometry.MiniGameHeroes.MiniGameHeroesCatGlider','Cat Glider Hero'],
+    ['geometry.MashupAdventureTime.PrincessBubblegum','Princess Bubblegum'],
+    ['__custom__','✏ Custom — ketik sendiri'],
 ];
 
-// ─────────────────────────────────────────────
-// NAVIGATION
-// ─────────────────────────────────────────────
-function navigate(page, addHistory = true) {
-    if (addHistory && state.page !== page) {
-        state.pageHistory.push(state.page);
-    }
-    state.page = page;
+// ═══════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════
+function nav(page, addHist=true) {
+    if (addHist && S.page !== page) S.history.push(S.page);
+    S.page = page;
     renderPage();
-    document.getElementById('back_btn').style.display =
-        state.pageHistory.length > 0 ? 'flex' : 'none';
-    window.scrollTo(0, 0);
-    document.querySelector('scroll-container').scrollTop = 0;
+    document.getElementById('btn_back').style.display = S.history.length ? 'flex' : 'none';
+    const sc = document.getElementById('scroll_root');
+    if (sc) sc.scrollTop = 0;
 }
 
 function goBack() {
-    if (state.pageHistory.length > 0) {
-        const prev = state.pageHistory.pop();
-        state.page = prev;
-        renderPage();
-        document.getElementById('back_btn').style.display =
-            state.pageHistory.length > 0 ? 'flex' : 'none';
-    }
+    if (!S.history.length) return;
+    S.page = S.history.pop();
+    renderPage();
+    document.getElementById('btn_back').style.display = S.history.length ? 'flex' : 'none';
 }
 
-// ─────────────────────────────────────────────
-// RENDER ROUTER
-// ─────────────────────────────────────────────
 function renderPage() {
     const pages = {
-        welcome: renderWelcome,
-        check_model: renderCheckModel,
-        pack_settings: renderPackSettings,
-        upload_geometry: renderUploadGeometry,
-        skins_list: renderSkinsList,
-        add_skin: renderAddSkin,
-        preview: renderPreview,
+        welcome: pgWelcome, check_model: pgCheckModel,
+        pack_settings: pgPackSettings, upload_geo: pgUploadGeo,
+        skins_list: pgSkinsList, add_skin: pgAddSkin, preview: pgPreview,
     };
-    const fn = pages[state.page];
-    if (fn) fn();
+    (pages[S.page] || pgWelcome)();
 }
 
-// ─────────────────────────────────────────────
-// PAGE: WELCOME
-// ─────────────────────────────────────────────
-function renderWelcome() {
-    document.getElementById('main_content').innerHTML = `
+// ═══════════════════════════════════════════
+//  PAGES
+// ═══════════════════════════════════════════
+
+/* ── WELCOME ── */
+function pgWelcome() {
+    set(`
     <div class="main_title">
         <div class="main_title_area">
-            <div class="main_title_span" style="font-family:'Minecraft Ten',sans-serif;font-size:26px;">⛏ BE Skin 4D Maker</div>
-            <div class="main_title_span" style="font-size:14px;color:rgba(255,255,255,0.6);margin-top:6px;">
-                Buat Skin Pack 4D Minecraft Bedrock Edition
+            <div class="main_title_span_main">BE Skin 4D Maker</div>
+            <div class="main_title_span_sub" style="font-size:14px;color:rgba(255,255,255,0.55);">
+                Buat Skin Pack 4D untuk Minecraft Bedrock
             </div>
         </div>
     </div>
 
-    <div class="main_block" style="padding:16px;">
+    <div class="main main_block">
         <div class="main_block_content">
-            <div style="font-size:14px;color:rgba(255,255,255,0.8);margin-bottom:12px;line-height:1.6;">
-                Tool ini memungkinkan kamu membuat <strong style="color:#6CC349;">Skin Pack 4D</strong> untuk Minecraft Bedrock Edition.
-                Skin 4D menggunakan geometry model khusus (seperti ekor, sayap, telinga, dll) yang membuat karakter terlihat lebih hidup dan unik.
-            </div>
+            <article_block>
+                <article_detail style="font-size:14px;line-height:1.7;color:rgba(255,255,255,0.85);">
+                    Tool ini memungkinkan kamu membuat <span style="color:#6CC349;font-weight:bold;">Skin Pack 4D</span>
+                    untuk Minecraft Bedrock Edition. Skin 4D menggunakan geometry model khusus
+                    (seperti ekor, sayap, telinga, dll) yang membuat karakter terlihat lebih hidup dan unik.
+                </article_detail>
 
-            <div class="block" style="margin:0 0 12px;padding:10px 12px;">
-                <div style="font-family:'Minecraft Five Bold',sans-serif;font-size:13px;color:#FFE866;margin-bottom:6px;">⚠ Persyaratan</div>
-                <ul style="color:rgba(255,255,255,0.8);font-size:13px;margin:0;padding-left:20px;line-height:1.8;">
-                    <li>File <code style="background:#1E1E1F;padding:1px 4px;">geometry.json</code> (model 4D)</li>
-                    <li>File texture skin (<code style="background:#1E1E1F;padding:1px 4px;">.png</code>) untuk setiap skin</li>
-                    <li>File cape (<code style="background:#1E1E1F;padding:1px 4px;">.png</code>) opsional per skin</li>
-                </ul>
-            </div>
+                <article_note style="margin:14px 0 10px;">
+                    <div style="font-family:'Minecraft Five Bold',sans-serif;color:#FFE866;margin-bottom:8px;">⚠ PERSYARATAN</div>
+                    <article_list>File <code>geometry.json</code> (model 4D)</article_list>
+                    <article_list>File texture skin (<code>.png</code>) untuk setiap skin</article_list>
+                    <article_list>File cape (<code>.png</code>) opsional per skin</article_list>
+                </article_note>
 
-            <div class="block" style="margin:0 0 16px;padding:10px 12px;background-color:rgba(46,107,229,0.1);border-left:6px solid #2E6BE5;">
-                <div style="font-size:13px;color:rgba(255,255,255,0.9);line-height:1.6;">
-                    💡 <strong>Skin 4D</strong> adalah skin yang menggunakan geometry kustom (bukan humanoid standar). 
-                    Geometry ini dibuat di <a href="https://web.blockbench.net/" target="_blank" style="color:#8CB3FF;text-decoration:none;">Blockbench</a> 
+                <article_note style="background-color:rgba(46,107,229,0.12);border-left-color:#2E6BE5;margin-bottom:4px;">
+                    💡 Skin 4D adalah skin yang menggunakan geometry kustom (bukan humanoid standar).
+                    Geometry ini dibuat di
+                    <a href="https://web.blockbench.net/" target="_blank" style="color:#8CB3FF;">Blockbench</a>
                     dan memiliki tulang-tulang tambahan seperti ekor, sayap, tanduk, telinga hewan, dll.
-                </div>
-            </div>
+                </article_note>
+            </article_block>
+        </div>
+    </div>
 
+    <div class="main main_block">
+        <div class="main_block_content">
             <div class="btn_group" style="flex-direction:column;gap:4px;">
-                <button class="btn large_btn green_btn" onclick="navigate('check_model')">
-                    🚀 Mulai Buat Skin Pack
-                </button>
-                <button class="btn large_btn normal_btn" onclick="showAbout()">
-                    ℹ️ Tentang Skin 4D
-                </button>
+                <button class="btn large_btn green_btn" onclick="nav('check_model')">🚀 Mulai Buat Skin Pack</button>
+                <button class="btn large_btn normal_btn" onclick="showAbout()">ℹ️ Tentang Skin 4D</button>
             </div>
         </div>
     </div>
 
-    <div class="page_info_title" style="margin-top:20px;">BE Skin 4D Maker</div>
-    <div class="page_info" style="margin-bottom:20px;">Berbasis OreUI by Spectrollay</div>
-    `;
+    <div class="footer_info" style="font-size:13px;color:rgba(255,255,255,0.35);">
+        BE Skin 4D Maker • Berbasis OreUI by Spectrollay
+    </div>`);
 }
 
-// ─────────────────────────────────────────────
-// PAGE: CHECK MODEL
-// ─────────────────────────────────────────────
-function renderCheckModel() {
-    document.getElementById('main_content').innerHTML = `
+/* ── CHECK MODEL ── */
+function pgCheckModel() {
+    set(`
     <div class="main_title">
         <div class="main_title_area">
-            <div class="main_title_span" style="font-family:'Minecraft Ten',sans-serif;font-size:20px;">Step 1 — Model Geometry</div>
+            <div class="main_title_span" style="font-size:13px;color:rgba(255,255,255,0.4);">LANGKAH 1 / 5</div>
+            <div class="main_title_span_main" style="font-size:20px;margin-top:4px;">Model Geometry</div>
         </div>
     </div>
 
-    <div class="main_block" style="padding:16px;">
+    <div class="main main_block">
         <div class="main_block_content">
-            <div style="font-size:14px;color:rgba(255,255,255,0.9);margin-bottom:16px;line-height:1.6;">
-                Apakah kamu sudah punya file <strong style="color:#6CC349;">geometry.json</strong> untuk model 4D kamu?
-            </div>
-
-            <div class="block" style="margin:0 0 12px;padding:12px;">
-                <div style="font-family:'Minecraft Five Bold',sans-serif;font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:8px;">Apa itu geometry.json?</div>
-                <div style="font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;">
-                    File geometry.json mendefinisikan bentuk 3D skin kamu, termasuk tulang-tulang tambahan seperti ekor, sayap, telinga hewan, 
-                    atau bagian tubuh unik lainnya. File ini dibuat menggunakan Blockbench.
-                </div>
-            </div>
-
-            <div style="font-size:13px;color:rgba(255,255,255,0.7);text-align:center;margin:16px 0 10px;">Pilih salah satu:</div>
-            
-            <div class="btn_group" style="flex-direction:column;gap:6px;">
-                <button class="btn large_btn green_btn" onclick="navigate('pack_settings')">
-                    ✅ Ya, saya sudah punya geometry.json
-                </button>
-                <button class="btn large_btn normal_btn" onclick="goToBlockbench()">
-                    🔨 Belum, buat di Blockbench dulu
-                </button>
-                <button class="btn large_btn normal_btn" onclick="useBuiltinGeometry()">
-                    📦 Pakai geometry bawaan Minecraft (built-in)
-                </button>
-            </div>
-
-            <div class="block" style="margin:16px 0 0;padding:10px 12px;background-color:rgba(255,232,102,0.08);">
-                <div style="font-size:12px;color:rgba(255,232,102,0.9);line-height:1.6;">
-                    ℹ️ <strong>Built-in geometry</strong> adalah model bawaan Minecraft seperti WolfTumbler, tuxedocat, ShyGuy, dll. 
-                    Kamu tidak perlu file geometry.json jika memakai ini, karena sudah ada di dalam game.
-                </div>
-            </div>
+            <article_block>
+                <article_detail style="font-size:14px;line-height:1.7;color:rgba(255,255,255,0.85);margin-bottom:14px;">
+                    Apakah kamu sudah punya file <code>geometry.json</code> untuk model 4D kamu?
+                </article_detail>
+                <article_note style="background-color:rgba(255,255,255,0.04);border-left-color:rgba(255,255,255,0.3);">
+                    <div style="font-family:'Minecraft Five Bold',sans-serif;font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:4px;">Apa itu geometry.json?</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">
+                        File yang mendefinisikan bentuk 3D skin kamu termasuk tulang tambahan seperti ekor, sayap, telinga hewan,
+                        atau bagian tubuh unik lainnya. Dibuat menggunakan Blockbench.
+                    </div>
+                </article_note>
+            </article_block>
         </div>
     </div>
-    `;
+
+    <div class="main main_block">
+        <div class="main_block_content">
+            <div class="btn_group" style="flex-direction:column;gap:6px;">
+                <link-block style="margin:0 0 4px;" onclick="nav('pack_settings')">
+                    <div class="link_title"><span class="link_title_text">✅ Ya, saya sudah punya geometry.json</span></div>
+                    <div class="link_description">Lanjut ke pengaturan pack</div>
+                </link-block>
+                <link-block style="margin:0 0 4px;" onclick="openBlockbench()">
+                    <div class="link_title"><span class="link_title_text">🔨 Belum — buat di Blockbench dulu</span></div>
+                    <div class="link_description">Buka web.blockbench.net di tab baru</div>
+                </link-block>
+                <link-block style="margin:0;" onclick="useBuiltin()">
+                    <div class="link_title"><span class="link_title_text">📦 Pakai geometry built-in Minecraft</span></div>
+                    <div class="link_description">Tidak perlu geometry.json — gunakan model bawaan game</div>
+                </link-block>
+            </div>
+        </div>
+    </div>`);
 }
 
-function goToBlockbench() {
-    showModal(
-        '🔨 Buka Blockbench',
-        `<div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.7;">
-            Kamu akan diarahkan ke <strong style="color:#8CB3FF;">web.blockbench.net</strong> untuk membuat model 4D.<br><br>
-            <strong style="color:#FFE866;">Langkah-langkah:</strong>
-            <ol style="margin:8px 0;padding-left:20px;color:rgba(255,255,255,0.7);">
-                <li>Buka Blockbench → New Project → Bedrock Entity</li>
-                <li>Buat model 4D dengan tulang tambahan</li>
-                <li>Ganti format versi ke <code style="background:#1E1E1F;padding:1px 4px;">1.8.0</code></li>
-                <li>Export → Export Bedrock Geometry</li>
-                <li>Kembali ke sini dan lanjutkan</li>
-            </ol>
+function openBlockbench() {
+    showModal('🔨 Buka Blockbench',
+        `<div style="font-size:13px;line-height:1.8;color:rgba(255,255,255,0.8);">
+            Kamu akan diarahkan ke <strong style="color:#8CB3FF;">web.blockbench.net</strong>.<br><br>
+            <strong style="color:#FFE866;">Langkah membuat model 4D:</strong>
+            <div style="margin:8px 0;padding-left:12px;color:rgba(255,255,255,0.65);font-size:12px;line-height:2;">
+                1. New Project → Bedrock Entity<br>
+                2. Buat model dengan tulang/bone tambahan<br>
+                3. Format versi → <code>1.8.0</code><br>
+                4. Export → Bedrock Geometry (.json)<br>
+                5. Kembali ke sini dan lanjutkan
+            </div>
         </div>`,
         [
-            { label: '🌐 Buka Blockbench', cls: 'green_btn', fn: () => { window.open('https://web.blockbench.net/', '_blank'); closeModal(); } },
-            { label: 'Nanti saja', cls: 'normal_btn', fn: closeModal },
+            { label: '🌐 Buka Blockbench', cls: 'green_btn', fn: () => { window.open('https://web.blockbench.net/','_blank'); closeModal(); } },
+            { label: 'Nanti', cls: 'normal_btn', fn: closeModal },
         ]
     );
 }
 
-function useBuiltinGeometry() {
-    state.geometryFile = null;
-    state.geometryData = null;
-    navigate('pack_settings');
-    showToast('✅ Mode built-in geometry — geometry.json opsional');
+function useBuiltin() {
+    S.geometryFile = null; S.geometryData = null;
+    nav('pack_settings');
+    pop('✅ Mode built-in — geometry.json opsional', 'success');
 }
 
-// ─────────────────────────────────────────────
-// PAGE: PACK SETTINGS
-// ─────────────────────────────────────────────
-function renderPackSettings() {
-    document.getElementById('main_content').innerHTML = `
+/* ── PACK SETTINGS ── */
+function pgPackSettings() {
+    set(`
     <div class="main_title">
         <div class="main_title_area">
-            <div class="main_title_span" style="font-family:'Minecraft Ten',sans-serif;font-size:20px;">Step 2 — Pack Settings</div>
+            <div class="main_title_span" style="font-size:13px;color:rgba(255,255,255,0.4);">LANGKAH 2 / 5</div>
+            <div class="main_title_span_main" style="font-size:20px;margin-top:4px;">Pengaturan Pack</div>
         </div>
     </div>
 
-    <div class="main_block" style="padding:16px;">
+    <div class="main main_block">
         <div class="main_block_content">
-            <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px;">
-                Isi informasi dasar skin pack kamu.
-            </div>
-
-            <div class="setting_row">
-                <label class="setting_label">Nama Pack</label>
-                <input class="ore_input" type="text" id="inp_packName" value="${escHtml(state.packName)}"
-                    placeholder="Contoh: My 4D Skin Pack" oninput="state.packName=this.value">
-                <div class="setting_hint">Nama yang tampil di Minecraft</div>
-            </div>
-
-            <div class="setting_row">
-                <label class="setting_label">Serialize Name</label>
-                <input class="ore_input" type="text" id="inp_serialize" value="${escHtml(state.packSerializeName)}"
-                    placeholder="contoh: my_4d_pack (huruf kecil, tanpa spasi)"
-                    oninput="state.packSerializeName=sanitizeId(this.value);this.value=state.packSerializeName">
-                <div class="setting_hint">ID internal unik pack (huruf kecil, underscore)</div>
-            </div>
-
-            <div class="setting_row">
-                <label class="setting_label">Localization Name</label>
-                <input class="ore_input" type="text" id="inp_local" value="${escHtml(state.packLocalizationName)}"
-                    placeholder="contoh: my_4d_pack"
-                    oninput="state.packLocalizationName=sanitizeId(this.value);this.value=state.packLocalizationName">
-                <div class="setting_hint">Nama untuk lokalisasi (skins.json serialize_name)</div>
-            </div>
-
-            <div class="btn_group" style="margin-top:16px;">
-                <button class="btn large_btn green_btn" onclick="savePackSettings()">
-                    ▶ Lanjut ke Upload Geometry
-                </button>
+            <div class="ore_field_group">
+                <div class="ore_field">
+                    <label class="ore_label">Nama Pack <span class="ore_required">*</span></label>
+                    <input class="ore_input" id="f_name" type="text" value="${esc(S.packName)}"
+                        placeholder="Contoh: My 4D Skin Pack"
+                        oninput="S.packName=this.value">
+                    <div class="ore_hint">Nama yang ditampilkan di Minecraft</div>
+                </div>
+                <div class="ore_field">
+                    <label class="ore_label">Serialize Name <span class="ore_required">*</span></label>
+                    <input class="ore_input" id="f_ser" type="text" value="${esc(S.serializeName)}"
+                        placeholder="my_4d_pack"
+                        oninput="S.serializeName=toId(this.value);this.value=S.serializeName">
+                    <div class="ore_hint">ID internal — huruf kecil & underscore saja</div>
+                </div>
+                <div class="ore_field">
+                    <label class="ore_label">Localization Name <span class="ore_required">*</span></label>
+                    <input class="ore_input" id="f_loc" type="text" value="${esc(S.localizationName)}"
+                        placeholder="my_4d_pack"
+                        oninput="S.localizationName=toId(this.value);this.value=S.localizationName">
+                    <div class="ore_hint">Nama untuk skins.json serialize_name</div>
+                </div>
             </div>
         </div>
     </div>
-    `;
+
+    <div class="main main_block">
+        <div class="main_block_content">
+            <div class="btn_group">
+                <button class="btn large_btn green_btn" onclick="savePackSettings()">▶ Lanjut</button>
+            </div>
+        </div>
+    </div>`);
 }
 
 function savePackSettings() {
-    const name = document.getElementById('inp_packName').value.trim();
-    const ser = document.getElementById('inp_serialize').value.trim();
-    const loc = document.getElementById('inp_local').value.trim();
-    if (!name) { showToast('❌ Nama pack tidak boleh kosong!'); return; }
-    if (!ser) { showToast('❌ Serialize name tidak boleh kosong!'); return; }
-    if (!loc) { showToast('❌ Localization name tidak boleh kosong!'); return; }
-    state.packName = name;
-    state.packSerializeName = ser;
-    state.packLocalizationName = loc;
-    navigate('upload_geometry');
+    const n = document.getElementById('f_name').value.trim();
+    const s = document.getElementById('f_ser').value.trim();
+    const l = document.getElementById('f_loc').value.trim();
+    if (!n || !s || !l) { pop('❌ Semua field wajib diisi!', 'error'); return; }
+    S.packName = n; S.serializeName = s; S.localizationName = l;
+    nav('upload_geo');
 }
 
-// ─────────────────────────────────────────────
-// PAGE: UPLOAD GEOMETRY
-// ─────────────────────────────────────────────
-function renderUploadGeometry() {
-    const hasGeo = state.geometryData !== null;
-    document.getElementById('main_content').innerHTML = `
+/* ── UPLOAD GEO ── */
+function pgUploadGeo() {
+    const hasGeo = !!S.geometryData;
+    set(`
     <div class="main_title">
         <div class="main_title_area">
-            <div class="main_title_span" style="font-family:'Minecraft Ten',sans-serif;font-size:20px;">Step 3 — Upload Geometry</div>
+            <div class="main_title_span" style="font-size:13px;color:rgba(255,255,255,0.4);">LANGKAH 3 / 5</div>
+            <div class="main_title_span_main" style="font-size:20px;margin-top:4px;">Upload Geometry</div>
         </div>
     </div>
 
-    <div class="main_block" style="padding:16px;">
+    <div class="main main_block">
         <div class="main_block_content">
-            <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:14px;line-height:1.6;">
-                Upload file <code style="background:#1E1E1F;padding:1px 4px;">geometry.json</code> model 4D kamu.
-                Jika pakai built-in geometry Minecraft, kamu bisa lewati langkah ini.
-            </div>
+            <article_block>
+                <article_detail style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:14px;line-height:1.6;">
+                    Upload file <code>geometry.json</code> model 4D kamu. Jika pakai built-in geometry, langkah ini bisa dilewati.
+                </article_detail>
+            </article_block>
 
-            <div class="upload_zone ${hasGeo ? 'upload_zone_success' : ''}" id="geo_drop_zone"
-                onclick="document.getElementById('geo_file_input').click()"
-                ondragover="event.preventDefault();this.classList.add('upload_zone_hover')"
-                ondragleave="this.classList.remove('upload_zone_hover')"
-                ondrop="handleGeoDrop(event)">
-                ${hasGeo
-                    ? `<div class="upload_success_icon">✅</div>
-                       <div class="upload_filename">${escHtml(state.geometryFile.name)}</div>
-                       <div class="upload_sub">Klik untuk ganti file</div>`
-                    : `<div class="upload_icon">📁</div>
-                       <div class="upload_label">Klik atau drag geometry.json di sini</div>
-                       <div class="upload_sub">Format: .json</div>`}
+            <div class="ore_dropzone ${hasGeo ? 'ore_dropzone_ok' : ''}" id="geo_dz"
+                onclick="document.getElementById('geo_fi').click()"
+                ondragover="event.preventDefault();this.classList.add('ore_dropzone_hover')"
+                ondragleave="this.classList.remove('ore_dropzone_hover')"
+                ondrop="onGeoDrop(event)">
+                ${hasGeo ? `
+                    <div style="font-size:28px;">✅</div>
+                    <div class="dz_label" style="color:#6CC349;">${esc(S.geometryFile.name)}</div>
+                    <div class="dz_sub">${geoNames().length} model — klik untuk ganti</div>
+                ` : `
+                    <div style="font-size:36px;margin-bottom:4px;">📄</div>
+                    <div class="dz_label">Klik atau drag geometry.json di sini</div>
+                    <div class="dz_sub">Format: .json</div>
+                `}
             </div>
-            <input type="file" id="geo_file_input" accept=".json" style="display:none" onchange="handleGeoFile(this.files[0])">
+            <input type="file" id="geo_fi" accept=".json" style="display:none" onchange="onGeoFile(this.files[0])">
 
             ${hasGeo ? `
-            <div class="block" style="margin:12px 0 0;padding:8px 12px;background-color:rgba(108,195,73,0.1);">
-                <div style="font-size:12px;color:#6CC349;">
-                    ✅ geometry.json berhasil dimuat — ${getGeometryNames().length} model ditemukan:<br>
-                    <span style="color:rgba(255,255,255,0.6);">${getGeometryNames().join(', ')}</span>
-                </div>
-            </div>` : ''}
+            <article_note style="background-color:rgba(108,195,73,0.1);border-left-color:#6CC349;margin-top:12px;">
+                <div style="font-size:12px;color:#6CC349;font-weight:bold;margin-bottom:4px;">✅ Geometry dimuat</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.5);">${geoNames().join(' • ')}</div>
+            </article_note>` : ''}
+        </div>
+    </div>
 
-            <div class="btn_group" style="margin-top:16px;flex-direction:column;gap:6px;">
-                <button class="btn large_btn green_btn" onclick="navigate('skins_list')">
-                    ${hasGeo ? '▶ Lanjut ke Daftar Skin' : '⏩ Lewati (Pakai Built-in)'}
+    <div class="main main_block">
+        <div class="main_block_content">
+            <div class="btn_group" style="flex-direction:column;gap:6px;">
+                <button class="btn large_btn green_btn" onclick="nav('skins_list')">
+                    ${hasGeo ? '▶ Lanjut ke Daftar Skin' : '⏩ Lewati — Pakai Built-in'}
                 </button>
             </div>
         </div>
-    </div>
-    `;
+    </div>`);
 }
 
-function handleGeoDrop(e) {
-    e.preventDefault();
-    e.currentTarget.classList.remove('upload_zone_hover');
-    const file = e.dataTransfer.files[0];
-    if (file) handleGeoFile(file);
+function onGeoDrop(e) {
+    e.preventDefault(); e.currentTarget.classList.remove('ore_dropzone_hover');
+    const f = e.dataTransfer.files[0]; if (f) onGeoFile(f);
 }
-
-function handleGeoFile(file) {
-    if (!file || !file.name.endsWith('.json')) {
-        showToast('❌ File harus berformat .json!'); return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
+function onGeoFile(file) {
+    if (!file?.name.endsWith('.json')) { pop('❌ File harus .json!', 'error'); return; }
+    const r = new FileReader();
+    r.onload = e => {
         try {
-            const data = JSON.parse(e.target.result);
-            state.geometryFile = file;
-            state.geometryData = data;
-            showToast('✅ geometry.json berhasil dimuat!');
-            renderUploadGeometry();
-        } catch {
-            showToast('❌ File JSON tidak valid!');
-        }
+            S.geometryData = JSON.parse(e.target.result);
+            S.geometryFile = file;
+            pop('✅ geometry.json dimuat!', 'success');
+            pgUploadGeo();
+        } catch { pop('❌ JSON tidak valid!', 'error'); }
     };
-    reader.readAsText(file);
+    r.readAsText(file);
+}
+function geoNames() {
+    if (!S.geometryData) return [];
+    return Object.keys(S.geometryData).filter(k => k.startsWith('geometry.'));
 }
 
-function getGeometryNames() {
-    if (!state.geometryData) return [];
-    return Object.keys(state.geometryData).filter(k => k.startsWith('geometry.'));
-}
-
-// ─────────────────────────────────────────────
-// PAGE: SKINS LIST
-// ─────────────────────────────────────────────
-function renderSkinsList() {
-    const skins = state.skins;
-    document.getElementById('main_content').innerHTML = `
+/* ── SKINS LIST ── */
+function pgSkinsList() {
+    const skins = S.skins;
+    set(`
     <div class="main_title">
         <div class="main_title_area">
-            <div class="main_title_span" style="font-family:'Minecraft Ten',sans-serif;font-size:20px;">Step 4 — Daftar Skin</div>
-            <div class="main_title_span" style="font-size:13px;color:rgba(255,255,255,0.5);">${skins.length} skin ditambahkan</div>
+            <div class="main_title_span" style="font-size:13px;color:rgba(255,255,255,0.4);">LANGKAH 4 / 5</div>
+            <div class="main_title_span_main" style="font-size:20px;margin-top:4px;">Daftar Skin</div>
+            <div class="main_title_span" style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:2px;">
+                ${skins.length} skin ditambahkan
+            </div>
         </div>
     </div>
 
-    <div class="main_block" style="padding:16px;">
+    <div class="main main_block">
         <div class="main_block_content">
-            <div class="btn_group" style="margin-bottom:14px;">
-                <button class="btn large_btn green_btn" onclick="startAddSkin()">
-                    ➕ Tambah Skin Baru
-                </button>
+            <div class="btn_group" style="margin-bottom:10px;">
+                <button class="btn large_btn green_btn" onclick="startAdd()">➕ Tambah Skin Baru</button>
             </div>
 
             ${skins.length === 0 ? `
-            <div class="block" style="margin:0;padding:20px;text-align:center;">
-                <div style="font-size:48px;margin-bottom:8px;">👤</div>
-                <div style="font-size:14px;color:rgba(255,255,255,0.5);">Belum ada skin.<br>Klik tombol di atas untuk menambah skin.</div>
+            <div class="ore_empty_state">
+                <div style="font-size:44px;margin-bottom:8px;">👤</div>
+                <div style="font-size:14px;color:rgba(255,255,255,0.4);">Belum ada skin.<br>Tambahkan skin pertama kamu.</div>
             </div>
-            ` : skins.map((skin, i) => `
-            <div class="skin_card">
-                <div class="skin_card_preview">
-                    ${skin.texturePreview
-                        ? `<img src="${skin.texturePreview}" style="width:48px;height:48px;object-fit:contain;image-rendering:pixelated;">`
-                        : '<div style="font-size:28px;line-height:48px;">👤</div>'
-                    }
+            ` : skins.map((sk, i) => `
+            <div class="ore_skin_row">
+                <div class="ore_skin_thumb">
+                    ${sk.texPrev
+                        ? `<img src="${sk.texPrev}" style="width:100%;height:100%;object-fit:contain;image-rendering:pixelated;">`
+                        : '<span style="font-size:22px;">👤</span>'}
                 </div>
-                <div class="skin_card_info">
-                    <div class="skin_card_name">${escHtml(skin.localizationName || 'Unnamed')}</div>
-                    <div class="skin_card_geo">${escHtml(skin.geometry)}</div>
-                    <div class="skin_card_tags">
-                        <span class="tag tag_${skin.type === 'free' ? 'green' : 'yellow'}">${skin.type}</span>
-                        ${skin.texture ? `<span class="tag tag_blue">Texture ✓</span>` : '<span class="tag tag_red">No Texture</span>'}
-                        ${skin.cape ? `<span class="tag tag_blue">Cape ✓</span>` : ''}
-                        ${skin.animations ? `<span class="tag tag_purple">Anim ✓</span>` : ''}
+                <div class="ore_skin_info">
+                    <div class="ore_skin_name">${esc(sk.locName || 'Unnamed')}</div>
+                    <div class="ore_skin_geo">${esc(sk.geometry)}</div>
+                    <div class="ore_skin_tags">
+                        <span class="otag ${sk.type==='free'?'otag_g':'otag_y'}">${sk.type}</span>
+                        ${sk.texFile ? '<span class="otag otag_b">Texture ✓</span>' : '<span class="otag otag_r">No Tex</span>'}
+                        ${sk.capeFile ? '<span class="otag otag_b">Cape ✓</span>' : ''}
+                        ${sk.anim ? '<span class="otag otag_p">Anim ✓</span>' : ''}
                     </div>
                 </div>
-                <div class="skin_card_actions">
-                    <button class="btn extra_small_btn normal_btn" style="height:30px;font-size:11px;" onclick="editSkin(${i})">✏️</button>
-                    <button class="btn extra_small_btn red_btn" style="height:30px;font-size:11px;" onclick="deleteSkin(${i})">🗑️</button>
+                <div class="ore_skin_btns">
+                    <button class="btn extra_small_btn normal_btn" style="height:28px;font-size:11px;margin:2px;" onclick="editSkin(${i})">✏️</button>
+                    <button class="btn extra_small_btn red_btn"    style="height:28px;font-size:11px;margin:2px;" onclick="delSkin(${i})">🗑️</button>
                 </div>
             </div>
             `).join('')}
-
-            ${skins.length > 0 ? `
-            <divider></divider>
-            <div class="btn_group" style="margin-top:12px;">
-                <button class="btn large_btn green_btn" onclick="navigate('preview')">
-                    📦 Generate Skin Pack ZIP
-                </button>
-            </div>
-            ` : ''}
         </div>
     </div>
-    `;
+
+    ${skins.length > 0 ? `
+    <div class="main main_block">
+        <div class="main_block_content">
+            <div class="btn_group">
+                <button class="btn large_btn green_btn" onclick="nav('preview')">📦 Buat Skin Pack ZIP</button>
+            </div>
+        </div>
+    </div>` : ''}`);
 }
 
-function startAddSkin() {
-    state.editingIndex = -1;
-    state._editSkin = {
-        localizationName: '',
-        geometry: 'geometry.humanoid.customSlim',
-        customGeometry: '',
-        textureFile: null,
-        texturePreview: null,
-        capeFile: null,
-        capePreview: null,
-        type: 'free',
-        animations: false,
-        animationType: 'animation.player.move.arms.zombie',
-    };
-    navigate('add_skin');
+function startAdd() {
+    S.editIdx = -1;
+    S.editBuf = { locName:'', geometry:'geometry.humanoid.customSlim', customGeo:'',
+                  texFile:null, texPrev:null, capeFile:null, capePrev:null,
+                  type:'free', anim:false };
+    nav('add_skin');
+}
+function editSkin(i) {
+    S.editIdx = i;
+    const sk = S.skins[i];
+    S.editBuf = { ...sk, customGeo: sk._customGeo || '' };
+    nav('add_skin');
+}
+function delSkin(i) {
+    S.skins.splice(i, 1);
+    pgSkinsList();
+    pop('🗑️ Skin dihapus', 'process');
 }
 
-function editSkin(index) {
-    state.editingIndex = index;
-    const s = state.skins[index];
-    state._editSkin = {
-        localizationName: s.localizationName,
-        geometry: s.geometry,
-        customGeometry: s._customGeometry || '',
-        textureFile: s.textureFile,
-        texturePreview: s.texturePreview,
-        capeFile: s.capeFile,
-        capePreview: s.capePreview,
-        type: s.type,
-        animations: !!s.animations,
-        animationType: s.animationType || 'animation.player.move.arms.zombie',
-    };
-    navigate('add_skin');
-}
-
-function deleteSkin(index) {
-    state.skins.splice(index, 1);
-    renderSkinsList();
-    showToast('🗑️ Skin dihapus');
-}
-
-// ─────────────────────────────────────────────
-// PAGE: ADD/EDIT SKIN
-// ─────────────────────────────────────────────
-function renderAddSkin() {
-    const s = state._editSkin;
-    const isEdit = state.editingIndex >= 0;
-    const geoOptions = KNOWN_GEOMETRIES.map(g =>
-        `<option value="${escHtml(g.value)}" ${s.geometry === g.value ? 'selected' : ''}>${escHtml(g.label)}</option>`
+/* ── ADD / EDIT SKIN ── */
+function pgAddSkin() {
+    const b = S.editBuf, isEdit = S.editIdx >= 0;
+    const geoOpts = GEOMS.map(([v,l]) =>
+        `<option value="${esc(v)}" ${b.geometry===v?'selected':''}>${esc(l)}</option>`
     ).join('');
+    const extraGeos = geoNames().filter(g => !GEOMS.find(([v])=>v===g));
 
-    // Extra geometry from uploaded file
-    const extraGeos = getGeometryNames().filter(g => !KNOWN_GEOMETRIES.find(k => k.value === g));
-
-    document.getElementById('main_content').innerHTML = `
+    set(`
     <div class="main_title">
         <div class="main_title_area">
-            <div class="main_title_span" style="font-family:'Minecraft Ten',sans-serif;font-size:20px;">
-                ${isEdit ? '✏️ Edit Skin' : '➕ Tambah Skin'}
+            <div class="main_title_span" style="font-size:13px;color:rgba(255,255,255,0.4);">LANGKAH 4 / 5</div>
+            <div class="main_title_span_main" style="font-size:20px;margin-top:4px;">${isEdit?'✏️ Edit Skin':'➕ Tambah Skin'}</div>
+        </div>
+    </div>
+
+    <div class="main main_block">
+        <div class="main_block_content">
+            <div class="ore_field_group">
+
+                <div class="ore_field">
+                    <label class="ore_label">Localization Name <span class="ore_required">*</span></label>
+                    <input class="ore_input" id="es_loc" type="text" value="${esc(b.locName)}"
+                        placeholder="Contoh: Steve, MySkin01"
+                        oninput="S.editBuf.locName=this.value">
+                    <div class="ore_hint">ID unik skin dalam pack</div>
+                </div>
+
+                <div class="ore_field">
+                    <label class="ore_label">Model Geometry <span class="ore_required">*</span></label>
+                    <select class="ore_select" id="es_geo" onchange="onGeoSel(this.value)">
+                        ${geoOpts}
+                        ${extraGeos.map(g=>`<option value="${esc(g)}" ${b.geometry===g?'selected':''}>📁 ${esc(g)}</option>`).join('')}
+                    </select>
+                </div>
+
+                <div class="ore_field" id="custom_geo_field" style="${b.geometry==='__custom__'?'':'display:none;'}">
+                    <label class="ore_label">Custom Geometry</label>
+                    <input class="ore_input" id="es_cgeo" type="text" value="${esc(b.customGeo)}"
+                        placeholder="geometry.Pack.ModelName"
+                        oninput="S.editBuf.customGeo=this.value">
+                    <div class="ore_hint">Nama geometry persis seperti di geometry.json</div>
+                </div>
+
             </div>
         </div>
     </div>
 
-    <div class="main_block" style="padding:16px;">
+    <div class="main main_block">
+        <div class="main-header" style="padding:8px 16px;font-size:12px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">File Upload</div>
         <div class="main_block_content">
 
-            <!-- Localization Name -->
-            <div class="setting_row">
-                <label class="setting_label">Localization Name <span style="color:#F46D6D;">*</span></label>
-                <input class="ore_input" type="text" id="es_locname"
-                    value="${escHtml(s.localizationName)}"
-                    placeholder="Contoh: Steve, Alex, MySkin1"
-                    oninput="state._editSkin.localizationName=this.value">
-                <div class="setting_hint">ID unik skin dalam pack (tidak boleh sama)</div>
-            </div>
-
-            <!-- Geometry -->
-            <div class="setting_row">
-                <label class="setting_label">Model Geometry <span style="color:#F46D6D;">*</span></label>
-                <select class="ore_select" id="es_geo" onchange="handleGeoSelect(this.value)">
-                    ${geoOptions}
-                    ${extraGeos.map(g => `<option value="${escHtml(g)}" ${s.geometry === g ? 'selected' : ''}>📁 ${escHtml(g)}</option>`).join('')}
-                </select>
-            </div>
-            <div id="custom_geo_row" class="setting_row" style="${s.geometry === '__custom__' ? '' : 'display:none;'}">
-                <label class="setting_label">Custom Geometry String</label>
-                <input class="ore_input" type="text" id="es_custom_geo"
-                    value="${escHtml(s.customGeometry)}"
-                    placeholder="geometry.YourPack.YourModel"
-                    oninput="state._editSkin.customGeometry=this.value">
-                <div class="setting_hint">Masukkan nama geometry persis seperti di geometry.json</div>
-            </div>
-
-            <!-- Texture -->
-            <div class="setting_row">
-                <label class="setting_label">Texture Skin <span style="color:#F46D6D;">*</span></label>
-                <div class="upload_zone_mini ${s.textureFile ? 'upload_zone_success' : ''}"
-                    id="tex_zone" onclick="document.getElementById('tex_file').click()"
-                    ondragover="event.preventDefault();this.classList.add('upload_zone_hover')"
-                    ondragleave="this.classList.remove('upload_zone_hover')"
-                    ondrop="handleTexDrop(event)">
-                    ${s.textureFile
-                        ? `${s.texturePreview ? `<img src="${s.texturePreview}" class="upload_preview_img">` : ''}
-                           <span class="upload_filename_mini">${escHtml(s.textureFile.name)}</span>
-                           <span class="upload_sub_mini">Klik untuk ganti</span>`
-                        : `<span class="upload_icon_mini">🖼️</span>
-                           <span class="upload_label_mini">Upload texture (.png)</span>`}
+            <div class="ore_field" style="margin-bottom:12px;">
+                <label class="ore_label">Texture Skin <span class="ore_required">*</span></label>
+                <div class="ore_dropzone ore_dropzone_mini ${b.texFile?'ore_dropzone_ok':''}" id="tex_dz"
+                    onclick="document.getElementById('tex_fi').click()"
+                    ondragover="event.preventDefault();this.classList.add('ore_dropzone_hover')"
+                    ondragleave="this.classList.remove('ore_dropzone_hover')"
+                    ondrop="onTexDrop(event)">
+                    ${b.texFile ? `
+                        ${b.texPrev?`<img src="${b.texPrev}" class="dz_mini_img">`:''}
+                        <div class="dz_mini_info">
+                            <div class="dz_label" style="color:#6CC349;">${esc(b.texFile.name)}</div>
+                            <div class="dz_sub">Klik untuk ganti</div>
+                        </div>
+                    ` : `
+                        <span style="font-size:22px;">🖼️</span>
+                        <div class="dz_mini_info">
+                            <div class="dz_label">Upload texture PNG</div>
+                            <div class="dz_sub">Drag & drop atau klik</div>
+                        </div>
+                    `}
                 </div>
-                <input type="file" id="tex_file" accept=".png,image/png" style="display:none" onchange="handleTexFile(this.files[0])">
+                <input type="file" id="tex_fi" accept=".png,image/png" style="display:none" onchange="onTexFile(this.files[0])">
             </div>
 
-            <!-- Cape -->
-            <div class="setting_row">
-                <label class="setting_label">Cape (Opsional)</label>
-                <div class="upload_zone_mini ${s.capeFile ? 'upload_zone_success' : ''}"
-                    id="cape_zone" onclick="document.getElementById('cape_file').click()"
-                    ondragover="event.preventDefault();this.classList.add('upload_zone_hover')"
-                    ondragleave="this.classList.remove('upload_zone_hover')"
-                    ondrop="handleCapeDrop(event)">
-                    ${s.capeFile
-                        ? `${s.capePreview ? `<img src="${s.capePreview}" class="upload_preview_img">` : ''}
-                           <span class="upload_filename_mini">${escHtml(s.capeFile.name)}</span>
-                           <span class="upload_sub_mini">Klik untuk ganti</span>`
-                        : `<span class="upload_icon_mini">🪂</span>
-                           <span class="upload_label_mini">Upload cape (.png) — opsional</span>`}
+            <div class="ore_field">
+                <label class="ore_label">Cape <span style="color:rgba(255,255,255,0.4);font-size:11px;">(opsional)</span></label>
+                <div class="ore_dropzone ore_dropzone_mini ${b.capeFile?'ore_dropzone_ok':''}" id="cape_dz"
+                    onclick="document.getElementById('cape_fi').click()"
+                    ondragover="event.preventDefault();this.classList.add('ore_dropzone_hover')"
+                    ondragleave="this.classList.remove('ore_dropzone_hover')"
+                    ondrop="onCapeDrop(event)">
+                    ${b.capeFile ? `
+                        ${b.capePrev?`<img src="${b.capePrev}" class="dz_mini_img">`:''}
+                        <div class="dz_mini_info">
+                            <div class="dz_label" style="color:#6CC349;">${esc(b.capeFile.name)}</div>
+                            <div class="dz_sub">Klik untuk ganti</div>
+                        </div>
+                    ` : `
+                        <span style="font-size:22px;">🪂</span>
+                        <div class="dz_mini_info">
+                            <div class="dz_label">Upload cape PNG (opsional)</div>
+                        </div>
+                    `}
                 </div>
-                <input type="file" id="cape_file" accept=".png,image/png" style="display:none" onchange="handleCapeFile(this.files[0])">
-                ${s.capeFile ? `<button onclick="removeCape()" style="background:none;border:none;color:#F46D6D;font-size:12px;cursor:pointer;padding:2px 0;">✖ Hapus cape</button>` : ''}
+                <input type="file" id="cape_fi" accept=".png,image/png" style="display:none" onchange="onCapeFile(this.files[0])">
+                ${b.capeFile?`<button onclick="rmCape()" style="background:none;border:none;color:#F46D6D;font-size:11px;cursor:pointer;padding:3px 0;">✖ Hapus cape</button>`:''}
             </div>
 
-            <!-- Type -->
-            <div class="setting_row">
-                <label class="setting_label">Tipe Skin</label>
-                <div style="display:flex;gap:8px;margin-top:4px;">
-                    <label class="radio_label">
-                        <input type="radio" name="skin_type" value="free" ${s.type === 'free' ? 'checked' : ''}
-                            onchange="state._editSkin.type='free'"> Free
-                    </label>
-                    <label class="radio_label">
-                        <input type="radio" name="skin_type" value="paid" ${s.type === 'paid' ? 'checked' : ''}
-                            onchange="state._editSkin.type='paid'"> Paid
-                    </label>
-                </div>
-            </div>
-
-            <!-- Animations -->
-            <div class="setting_row">
-                <label class="setting_label">Animasi Khusus</label>
-                <label class="checkbox_label" style="margin-top:6px;">
-                    <div class="custom-checkbox ${s.animations ? 'on' : ''}" id="anim_cb" onclick="toggleAnim()">
-                        <img src="./images/check.svg" onerror="this.style.display='none'">
-                    </div>
-                    <span style="font-size:13px;margin-left:8px;color:rgba(255,255,255,0.8);">Zombie Arms (move.arms)</span>
-                </label>
-                <div class="setting_hint">Membuat lengan berjalan seperti zombie</div>
-            </div>
-
-            <divider></divider>
-
-            <div class="btn_group" style="flex-direction:column;gap:6px;margin-top:12px;">
-                <button class="btn large_btn green_btn" onclick="saveSkin()">
-                    ${isEdit ? '💾 Simpan Perubahan' : '➕ Tambahkan Skin'}
-                </button>
-                <button class="btn large_btn normal_btn" onclick="navigate('skins_list')">
-                    ✖ Batal
-                </button>
-            </div>
         </div>
     </div>
-    `;
+
+    <div class="main main_block">
+        <div class="main-header" style="padding:8px 16px;font-size:12px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Pengaturan</div>
+        <div class="main_block_content">
+
+            <div class="ore_field" style="margin-bottom:12px;">
+                <label class="ore_label">Tipe Skin</label>
+                <div style="display:flex;gap:16px;margin-top:6px;">
+                    <label class="ore_radio">
+                        <input type="radio" name="sk_type" value="free" ${b.type==='free'?'checked':''}
+                            onchange="S.editBuf.type='free'"> Free
+                    </label>
+                    <label class="ore_radio">
+                        <input type="radio" name="sk_type" value="paid" ${b.type==='paid'?'checked':''}
+                            onchange="S.editBuf.type='paid'"> Paid
+                    </label>
+                </div>
+            </div>
+
+            <div class="ore_field ore_checkbox_row" onclick="toggleAnim()">
+                <div class="custom-checkbox ${b.anim?'on':''}" id="anim_cb"></div>
+                <div style="margin-left:10px;">
+                    <div class="ore_label" style="cursor:pointer;margin-bottom:0;">Zombie Arms Animation</div>
+                    <div class="ore_hint">Lengan bergerak seperti zombie (move.arms)</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="main main_block">
+        <div class="main_block_content">
+            <div class="btn_group" style="flex-direction:column;gap:6px;">
+                <button class="btn large_btn green_btn" onclick="saveSkin()">
+                    ${isEdit?'💾 Simpan Perubahan':'➕ Tambahkan Skin'}
+                </button>
+                <button class="btn large_btn normal_btn" onclick="nav('skins_list')">✖ Batal</button>
+            </div>
+        </div>
+    </div>`);
 }
 
-function handleGeoSelect(val) {
-    state._editSkin.geometry = val;
-    document.getElementById('custom_geo_row').style.display =
-        val === '__custom__' ? '' : 'none';
+function onGeoSel(v) {
+    S.editBuf.geometry = v;
+    const f = document.getElementById('custom_geo_field');
+    if (f) f.style.display = v === '__custom__' ? '' : 'none';
 }
-
-function handleTexDrop(e) {
-    e.preventDefault();
-    e.currentTarget.classList.remove('upload_zone_hover');
-    const f = e.dataTransfer.files[0];
-    if (f) handleTexFile(f);
+function onTexDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('ore_dropzone_hover'); onTexFile(e.dataTransfer.files[0]); }
+function onCapeDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('ore_dropzone_hover'); onCapeFile(e.dataTransfer.files[0]); }
+function onTexFile(f) {
+    if (!f?.type.includes('png')) { pop('❌ Hanya file PNG!','error'); return; }
+    readDataUrl(f, url => { S.editBuf.texFile=f; S.editBuf.texPrev=url; pgAddSkin(); });
 }
-function handleCapeDrop(e) {
-    e.preventDefault();
-    e.currentTarget.classList.remove('upload_zone_hover');
-    const f = e.dataTransfer.files[0];
-    if (f) handleCapeFile(f);
+function onCapeFile(f) {
+    if (!f?.type.includes('png')) { pop('❌ Hanya file PNG!','error'); return; }
+    readDataUrl(f, url => { S.editBuf.capeFile=f; S.editBuf.capePrev=url; pgAddSkin(); });
 }
-
-function handleTexFile(file) {
-    if (!file || !file.type.includes('png')) { showToast('❌ Hanya file PNG!'); return; }
-    const reader = new FileReader();
-    reader.onload = e => {
-        state._editSkin.textureFile = file;
-        state._editSkin.texturePreview = e.target.result;
-        renderAddSkin();
-    };
-    reader.readAsDataURL(file);
-}
-
-function handleCapeFile(file) {
-    if (!file || !file.type.includes('png')) { showToast('❌ Hanya file PNG!'); return; }
-    const reader = new FileReader();
-    reader.onload = e => {
-        state._editSkin.capeFile = file;
-        state._editSkin.capePreview = e.target.result;
-        renderAddSkin();
-    };
-    reader.readAsDataURL(file);
-}
-
-function removeCape() {
-    state._editSkin.capeFile = null;
-    state._editSkin.capePreview = null;
-    renderAddSkin();
-}
-
+function rmCape() { S.editBuf.capeFile=null; S.editBuf.capePrev=null; pgAddSkin(); }
 function toggleAnim() {
-    state._editSkin.animations = !state._editSkin.animations;
+    S.editBuf.anim = !S.editBuf.anim;
     const cb = document.getElementById('anim_cb');
-    if (cb) cb.classList.toggle('on', state._editSkin.animations);
+    if (cb) cb.classList.toggle('on', S.editBuf.anim);
 }
 
 function saveSkin() {
-    const s = state._editSkin;
-    const locName = document.getElementById('es_locname')?.value?.trim() || s.localizationName;
-    let geo = s.geometry;
+    const b = S.editBuf;
+    const locName = document.getElementById('es_loc')?.value?.trim() || b.locName;
+    let geo = b.geometry;
     if (geo === '__custom__') {
-        geo = (document.getElementById('es_custom_geo')?.value?.trim()) || s.customGeometry;
-        if (!geo) { showToast('❌ Masukkan custom geometry string!'); return; }
+        geo = document.getElementById('es_cgeo')?.value?.trim() || b.customGeo;
+        if (!geo) { pop('❌ Isi custom geometry!','error'); return; }
     }
-    if (!locName) { showToast('❌ Localization name wajib diisi!'); return; }
-    if (!s.textureFile) { showToast('❌ Texture skin wajib diupload!'); return; }
+    if (!locName) { pop('❌ Localization name wajib!','error'); return; }
+    if (!b.texFile) { pop('❌ Texture skin wajib diupload!','error'); return; }
+    const dup = S.skins.findIndex((s,i) => s.locName===locName && i!==S.editIdx);
+    if (dup>=0) { pop('❌ Localization name sudah dipakai!','error'); return; }
 
-    // Check duplicate localization name
-    const dupIdx = state.skins.findIndex((sk, i) =>
-        sk.localizationName === locName && i !== state.editingIndex);
-    if (dupIdx >= 0) { showToast('❌ Localization name sudah dipakai!'); return; }
-
-    const skinEntry = {
-        localizationName: locName,
-        geometry: geo,
-        _customGeometry: s.geometry === '__custom__' ? geo : undefined,
-        textureFile: s.textureFile,
-        texturePreview: s.texturePreview,
-        capeFile: s.capeFile,
-        capePreview: s.capePreview,
-        type: s.type,
-        animations: s.animations ? { 'move.arms': s.animationType } : null,
-        animationType: s.animationType,
+    const entry = {
+        locName, geometry: geo, _customGeo: b.geometry==='__custom__'?geo:undefined,
+        texFile: b.texFile, texPrev: b.texPrev,
+        capeFile: b.capeFile, capePrev: b.capePrev,
+        type: b.type,
+        anim: b.anim ? { 'move.arms': 'animation.player.move.arms.zombie' } : null,
     };
-
-    if (state.editingIndex >= 0) {
-        state.skins[state.editingIndex] = skinEntry;
-        showToast('✅ Skin diperbarui!');
-    } else {
-        state.skins.push(skinEntry);
-        showToast('✅ Skin ditambahkan!');
-    }
-    navigate('skins_list');
+    if (S.editIdx >= 0) { S.skins[S.editIdx] = entry; pop('✅ Skin diperbarui!','success'); }
+    else { S.skins.push(entry); pop('✅ Skin ditambahkan!','success'); }
+    nav('skins_list');
 }
 
-// ─────────────────────────────────────────────
-// PAGE: PREVIEW & GENERATE
-// ─────────────────────────────────────────────
-function renderPreview() {
-    const skins = state.skins;
-    const hasGeo = state.geometryData !== null;
-    document.getElementById('main_content').innerHTML = `
+/* ── PREVIEW ── */
+function pgPreview() {
+    set(`
     <div class="main_title">
         <div class="main_title_area">
-            <div class="main_title_span" style="font-family:'Minecraft Ten',sans-serif;font-size:20px;">Step 5 — Preview & Generate</div>
+            <div class="main_title_span" style="font-size:13px;color:rgba(255,255,255,0.4);">LANGKAH 5 / 5</div>
+            <div class="main_title_span_main" style="font-size:20px;margin-top:4px;">Preview & Generate</div>
         </div>
     </div>
 
-    <div class="main_block" style="padding:16px;">
+    <div class="main main_block">
+        <div class="main-header" style="padding:8px 16px;font-size:12px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Ringkasan Pack</div>
         <div class="main_block_content">
-            <div class="block" style="margin:0 0 12px;padding:12px;">
-                <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:8px;font-family:'Minecraft Five Bold',sans-serif;">📋 Ringkasan Pack</div>
-                <div class="summary_row"><span class="sum_key">Nama Pack:</span><span class="sum_val">${escHtml(state.packName)}</span></div>
-                <div class="summary_row"><span class="sum_key">Serialize Name:</span><span class="sum_val">${escHtml(state.packSerializeName)}</span></div>
-                <div class="summary_row"><span class="sum_key">Localization:</span><span class="sum_val">${escHtml(state.packLocalizationName)}</span></div>
-                <div class="summary_row"><span class="sum_key">Geometry:</span><span class="sum_val">${hasGeo ? '✅ ' + escHtml(state.geometryFile.name) : '⚡ Built-in Only'}</span></div>
-                <div class="summary_row"><span class="sum_key">Jumlah Skin:</span><span class="sum_val" style="color:#6CC349;">${skins.length} skin</span></div>
-            </div>
+            ${[
+                ['Nama Pack', S.packName],
+                ['Serialize Name', S.serializeName],
+                ['Localization', S.localizationName],
+                ['Geometry', S.geometryData ? '✅ ' + S.geometryFile.name : '⚡ Built-in only'],
+                ['Jumlah Skin', S.skins.length + ' skin'],
+            ].map(([k,v])=>`
+            <div class="ore_summary_row">
+                <span class="ore_sum_k">${k}</span>
+                <span class="ore_sum_v">${esc(v)}</span>
+            </div>`).join('')}
+        </div>
+    </div>
 
-            <!-- Skin Preview Grid -->
-            <div class="block" style="margin:0 0 12px;padding:12px;">
-                <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:10px;font-family:'Minecraft Five Bold',sans-serif;">👥 Skin Dalam Pack</div>
-                <div class="skin_preview_grid">
-                    ${skins.map((s, i) => `
-                    <div class="skin_preview_card">
-                        ${s.texturePreview
-                            ? `<img src="${s.texturePreview}" style="width:40px;height:40px;image-rendering:pixelated;object-fit:contain;">`
-                            : '<div style="font-size:24px;">👤</div>'}
-                        <div style="font-size:11px;color:rgba(255,255,255,0.7);text-align:center;word-break:break-all;">${escHtml(s.localizationName)}</div>
-                    </div>
-                    `).join('')}
-                </div>
-            </div>
-
-            <div class="block" style="margin:0 0 16px;padding:10px 12px;background-color:rgba(46,107,229,0.1);border-left:6px solid #2E6BE5;">
-                <div style="font-size:12px;color:rgba(255,255,255,0.8);line-height:1.6;">
-                    ℹ️ ZIP yang dihasilkan berisi: <code style="background:#1E1E1F;padding:1px 4px;">manifest.json</code>, 
-                    <code style="background:#1E1E1F;padding:1px 4px;">skins.json</code>, 
-                    ${hasGeo ? '<code style="background:#1E1E1F;padding:1px 4px;">geometry.json</code>, ' : ''}
-                    semua file texture dan cape skin kamu.<br>
-                    Rename file dari <code style="background:#1E1E1F;padding:1px 4px;">.zip</code> ke <code style="background:#1E1E1F;padding:1px 4px;">.mcpack</code> untuk langsung diinstall di Minecraft.
-                </div>
-            </div>
-
-            <div class="btn_group" style="flex-direction:column;gap:6px;">
-                <button class="btn large_btn green_btn" id="gen_btn" onclick="generateZip()">
-                    📦 Generate & Download ZIP
-                </button>
-                <button class="btn large_btn normal_btn" onclick="navigate('skins_list')">
-                    ✏️ Edit Skin
-                </button>
+    <div class="main main_block">
+        <div class="main-header" style="padding:8px 16px;font-size:12px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;">Preview Skin</div>
+        <div class="main_block_content">
+            <div class="ore_skin_grid">
+                ${S.skins.map(sk=>`
+                <div class="ore_skin_tile">
+                    ${sk.texPrev?`<img src="${sk.texPrev}" style="width:36px;height:36px;image-rendering:pixelated;object-fit:contain;">`:'<span style="font-size:22px;">👤</span>'}
+                    <div style="font-size:10px;color:rgba(255,255,255,0.5);text-align:center;word-break:break-all;margin-top:3px;">${esc(sk.locName)}</div>
+                </div>`).join('')}
             </div>
         </div>
     </div>
-    `;
+
+    <div class="main main_block">
+        <div class="main_block_content">
+            <article_note style="background-color:rgba(46,107,229,0.1);border-left-color:#2E6BE5;margin-bottom:14px;">
+                💡 Setelah download, rename file dari <code>.zip</code> ke <code>.mcpack</code> untuk langsung install di Minecraft Bedrock.
+            </article_note>
+            <div class="btn_group" style="flex-direction:column;gap:6px;">
+                <button class="btn large_btn green_btn" id="gen_btn" onclick="generateZip()">📦 Generate & Download ZIP</button>
+                <button class="btn large_btn normal_btn" onclick="nav('skins_list')">✏️ Kembali Edit Skin</button>
+            </div>
+        </div>
+    </div>`);
 }
 
-// ─────────────────────────────────────────────
-// GENERATE ZIP
-// ─────────────────────────────────────────────
+/* ── GENERATE ZIP ── */
 async function generateZip() {
     const btn = document.getElementById('gen_btn');
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating...'; btn.classList.add('disabled_btn'); btn.classList.remove('green_btn'); }
-
+    if (btn) { btn.disabled=true; btn.textContent='⏳ Generating...'; btn.classList.add('disabled_btn'); btn.classList.remove('green_btn'); }
     try {
         const zip = new JSZip();
-        const folderName = sanitizeFilename(state.packName);
-        const folder = zip.folder(folderName);
+        const fn  = safeName(S.packName);
+        const dir = zip.folder(fn);
 
-        // UUIDs
-        const headerUUID = generateUUID();
-        const moduleUUID = generateUUID();
+        dir.file('manifest.json', JSON.stringify({
+            format_version:2,
+            header:{ name:S.packName, uuid:uuid(), version:[1,0,0] },
+            modules:[{ type:'skin_pack', uuid:uuid(), version:[1,0,0] }]
+        }, null, 4));
 
-        // manifest.json
-        const manifest = {
-            format_version: 2,
-            header: {
-                name: state.packName,
-                uuid: headerUUID,
-                version: [1, 0, 0]
-            },
-            modules: [{
-                type: 'skin_pack',
-                uuid: moduleUUID,
-                version: [1, 0, 0]
-            }]
-        };
-        folder.file('manifest.json', JSON.stringify(manifest, null, 4));
+        if (S.geometryData) dir.file('geometry.json', JSON.stringify(S.geometryData, null, 3));
 
-        // geometry.json (if uploaded)
-        if (state.geometryData) {
-            folder.file('geometry.json', JSON.stringify(state.geometryData, null, 3));
+        const skins = [];
+        for (const sk of S.skins) {
+            const tname = safeName(sk.locName) + '_texture.png';
+            if (sk.texFile) dir.file(tname, await toAB(sk.texFile), {binary:true});
+            let cname = null;
+            if (sk.capeFile) { cname = safeName(sk.locName)+'_cape.png'; dir.file(cname, await toAB(sk.capeFile), {binary:true}); }
+            const e = { localization_name:sk.locName, geometry:sk.geometry, texture:tname, type:sk.type };
+            if (cname) e.cape = cname;
+            if (sk.anim) e.animations = sk.anim;
+            skins.push(e);
         }
+        dir.file('skins.json', JSON.stringify({ skins, serialize_name:S.serializeName, localization_name:S.localizationName }, null, 2));
 
-        // Build skins.json entries & add PNG files
-        const skinsArr = [];
-        for (const skin of state.skins) {
-            // Texture
-            const texName = sanitizeFilename(skin.localizationName) + '_texture.png';
-            if (skin.textureFile) {
-                const texData = await readFileAsArrayBuffer(skin.textureFile);
-                folder.file(texName, texData, { binary: true });
-            }
-
-            // Cape
-            let capeName = null;
-            if (skin.capeFile) {
-                capeName = sanitizeFilename(skin.localizationName) + '_cape.png';
-                const capeData = await readFileAsArrayBuffer(skin.capeFile);
-                folder.file(capeName, capeData, { binary: true });
-            }
-
-            const entry = {
-                localization_name: skin.localizationName,
-                geometry: skin.geometry,
-                texture: texName,
-                type: skin.type,
-            };
-            if (capeName) entry.cape = capeName;
-            if (skin.animations) entry.animations = skin.animations;
-            skinsArr.push(entry);
-        }
-
-        // skins.json
-        const skinsJson = {
-            skins: skinsArr,
-            serialize_name: state.packSerializeName,
-            localization_name: state.packLocalizationName,
-        };
-        folder.file('skins.json', JSON.stringify(skinsJson, null, 2));
-
-        // Generate and download
-        const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
-        const url = URL.createObjectURL(blob);
+        const blob = await zip.generateAsync({type:'blob', compression:'DEFLATE'});
         const a = document.createElement('a');
-        a.href = url;
-        a.download = `${folderName}.zip`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        showToast('🎉 Skin pack berhasil di-generate! Rename .zip → .mcpack untuk install.');
-        if (btn) { btn.disabled = false; btn.textContent = '✅ Download Lagi'; btn.classList.remove('disabled_btn'); btn.classList.add('green_btn'); }
-
-    } catch (err) {
-        console.error(err);
-        showToast('❌ Gagal generate ZIP: ' + err.message);
-        if (btn) { btn.disabled = false; btn.textContent = '📦 Generate & Download ZIP'; btn.classList.remove('disabled_btn'); btn.classList.add('green_btn'); }
+        a.href = URL.createObjectURL(blob); a.download = fn+'.zip';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        pop('🎉 Download berhasil! Rename .zip → .mcpack untuk install.', 'success');
+        if (btn) { btn.disabled=false; btn.textContent='✅ Download Lagi'; btn.classList.remove('disabled_btn'); btn.classList.add('green_btn'); }
+    } catch(err) {
+        pop('❌ Gagal generate: '+err.message, 'error');
+        if (btn) { btn.disabled=false; btn.textContent='📦 Generate & Download ZIP'; btn.classList.remove('disabled_btn'); btn.classList.add('green_btn'); }
     }
 }
 
-function readFileAsArrayBuffer(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.onerror = reject;
-        reader.readAsArrayBuffer(file);
-    });
-}
-
-// ─────────────────────────────────────────────
-// ABOUT MODAL
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════
+//  ABOUT
+// ═══════════════════════════════════════════
 function showAbout() {
-    showModal(
-        'ℹ️ Tentang Skin 4D',
+    showModal('ℹ️ Tentang Skin 4D',
         `<div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.8;">
-            <strong style="color:#6CC349;">Skin 4D Minecraft Bedrock</strong> adalah skin yang menggunakan custom geometry model, 
-            yang berarti karakter memiliki bagian tubuh ekstra seperti:
-            <ul style="padding-left:20px;margin:8px 0;">
-                <li>🐾 Ekor, telinga, cakar (PawsAndClaws, WolfTumbler)</li>
-                <li>🐲 Sayap naga, tanduk (DragonMother)</li>
-                <li>🐍 Tubuh ular (SnakeGoddess)</li>
-                <li>🐇 Telinga kelinci (MoonRabbit)</li>
-                <li>👼 Halo, sayap (Guanyin)</li>
-                <li>🧙 Cape khusus dengan fisik</li>
-            </ul>
+            <strong style="color:#6CC349;">Skin 4D Minecraft Bedrock</strong> adalah skin dengan custom geometry, sehingga karakter memiliki bagian tubuh ekstra:<br>
+            <div style="margin:8px 0 8px 12px;font-size:12px;color:rgba(255,255,255,0.6);line-height:2;">
+                🐾 Ekor, telinga, cakar &nbsp;•&nbsp; 🐲 Sayap naga, tanduk<br>
+                🐍 Tubuh ular &nbsp;•&nbsp; 🐇 Telinga kelinci &nbsp;•&nbsp; 👼 Halo & sayap
+            </div>
             <strong style="color:#FFE866;">Format Skin Pack Bedrock:</strong>
-            <ul style="padding-left:20px;margin:8px 0;font-family:monospace;font-size:11px;color:rgba(255,255,255,0.6);">
-                <li>manifest.json — info pack</li>
-                <li>skins.json — daftar skin</li>
-                <li>geometry.json — model 3D</li>
-                <li>*.png — file texture & cape</li>
-            </ul>
+            <div style="margin:4px 0 0 12px;font-size:11px;font-family:monospace;color:rgba(255,255,255,0.5);line-height:2;">
+                manifest.json &nbsp;•&nbsp; skins.json &nbsp;•&nbsp; geometry.json &nbsp;•&nbsp; *.png
+            </div>
         </div>`,
-        [{ label: 'Mengerti', cls: 'green_btn', fn: closeModal }]
+        [{label:'Mengerti', cls:'green_btn', fn:closeModal}]
     );
 }
 
-// ─────────────────────────────────────────────
-// MODAL
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════
 function showModal(title, body, actions) {
-    document.getElementById('modal_title').innerHTML = title;
-    document.getElementById('modal_body').innerHTML = body;
-    const actDiv = document.getElementById('modal_actions');
-    actDiv.innerHTML = '';
+    document.getElementById('modal_title_text').textContent = title;
+    document.getElementById('modal_content_area').innerHTML = body;
+    const bg = document.getElementById('modal_btn_group');
+    bg.innerHTML = '';
     actions.forEach(a => {
-        const btn = document.createElement('button');
-        btn.className = `btn middle_btn ${a.cls}`;
-        btn.innerHTML = a.label;
-        btn.onclick = a.fn;
-        actDiv.appendChild(btn);
+        const b = document.createElement('button');
+        b.className = `btn middle_btn ${a.cls}`;
+        b.innerHTML = a.label;
+        b.onclick = a.fn;
+        bg.appendChild(b);
     });
-    document.getElementById('overlay').style.display = 'block';
-    document.getElementById('modal_dialog').style.display = 'flex';
+    document.getElementById('modal_overlay').style.display = 'block';
+    document.getElementById('modal_area').style.display = 'block';
 }
-
 function closeModal() {
-    document.getElementById('overlay').style.display = 'none';
-    document.getElementById('modal_dialog').style.display = 'none';
+    document.getElementById('modal_overlay').style.display = 'none';
+    document.getElementById('modal_area').style.display = 'none';
 }
 
-function closeOverlay() { closeModal(); }
-
-// ─────────────────────────────────────────────
-// TOAST
-// ─────────────────────────────────────────────
-let toastTimer;
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.display = 'block';
-    t.classList.add('toast_show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-        t.classList.remove('toast_show');
-        setTimeout(() => { t.style.display = 'none'; }, 300);
-    }, 3000);
+// ═══════════════════════════════════════════
+//  POP TOAST
+// ═══════════════════════════════════════════
+function pop(msg, type='') {
+    const area = document.getElementById('pop_area');
+    const el = document.createElement('div');
+    el.className = `pop ${type}`;
+    el.textContent = msg;
+    area.appendChild(el);
+    requestAnimationFrame(() => { requestAnimationFrame(() => el.classList.add('show')); });
+    setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 350); }, 3000);
 }
 
-// ─────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────
-function escHtml(str) {
-    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+function set(html) { document.getElementById('main_content').innerHTML = html; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toId(s) { return s.toLowerCase().replace(/[^a-z0-9_]/g,'_').replace(/_+/g,'_'); }
+function safeName(s) { return s.replace(/[^a-zA-Z0-9_\-\.]/g,'_'); }
+function uuid() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{ const r=Math.random()*16|0; return(c==='x'?r:(r&0x3|0x8)).toString(16); }); }
+function readDataUrl(f, cb) { const r=new FileReader(); r.onload=e=>cb(e.target.result); r.readAsDataURL(f); }
+function toAB(f) { return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsArrayBuffer(f); }); }
 
-function sanitizeId(str) {
-    return str.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_');
-}
-
-function sanitizeFilename(str) {
-    return str.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
-}
-
-function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-        const r = Math.random() * 16 | 0;
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
-}
-
-// ─────────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
-        const mask = document.getElementById('loading_mask');
-        if (mask) { mask.style.opacity = '0'; mask.style.transition = 'opacity 0.4s'; setTimeout(() => mask.remove(), 400); }
-        navigate('welcome', false);
-    }, 600);
+        const m = document.getElementById('loading_mask');
+        if (m) { m.style.transition='opacity 0.4s'; m.style.opacity='0'; setTimeout(()=>m.remove(),400); }
+        nav('welcome', false);
+    }, 700);
 });
-
 </script>
 </body>
 </html>
