@@ -616,7 +616,7 @@ async function generateZip() {
             if (sk.capeFile) { cname = safeName(sk.locName)+'_cape.png'; dir.file(cname, await toAB(sk.capeFile), {binary:true}); }
             const e = { localization_name:sk.locName, geometry:sk.geometry, texture:tname, type:sk.type };
             if (cname) e.cape = cname;
-            if (sk.anim) e.animations = sk.anim;
+            if (sk.anim) e.animation_type = 'zombie';
             skins.push(e);
         }
         dir.file('skins.json', JSON.stringify({ skins, serialize_name:S.serializeName, localization_name:S.localizationName }, null, 2));
@@ -818,7 +818,8 @@ function saveSkin() {
 
 function toggleAnim() {
     const b = S.editBuf;
-    b.anim = b.anim ? null : { controller: 'animation.humanoid.move', initial: ['animation.humanoid.move'] };
+    // Format animasi MCBE yang benar untuk zombie arms
+    b.anim = b.anim ? null : true;
     const cb = document.getElementById('anim_cb');
     if (cb) cb.className = 'custom-checkbox ' + (b.anim ? 'on' : '');
 }
@@ -924,6 +925,7 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 <script src="./javascript/loading.js"></script>
 <script src="./library/accessibility.js"></script>
+<script src="./javascript/public_script.js"></script>
 <script src="./javascript/app_script.js"></script>
 <script src="./javascript/oreui.js"></script>
 </body>

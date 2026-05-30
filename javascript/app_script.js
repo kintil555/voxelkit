@@ -1,9 +1,9 @@
 /*
  * app_script.js — voxelkit / BE Skin 4D Maker
- * Load SETELAH public_script.js — semua var global sudah ada di sana
+ * Minimal shim - semua definisi ada di public_script.js
  */
 
-// Responsive sidebar (tidak duplikat var apapun)
+// Responsive sidebar
 document.addEventListener('DOMContentLoaded', function () {
     const mainScrollView = document.querySelector('.main_scroll_view.with_sidebar');
     if (mainScrollView) {
