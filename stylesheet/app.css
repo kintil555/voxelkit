@@ -3,15 +3,26 @@
  * Built on top of OreUI by Spectrollay
  */
 
-/* ─── Biarkan OreUI handle layout, hanya override yang perlu ─── */
-dispaly-area {
-    height: 100%;
-}
-
+/* ─── Center konten dengan max-width ─── */
 main {
     padding-bottom: 40px;
     min-width: unset !important;
+    width: 100% !important;
+    max-width: 640px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     box-sizing: border-box;
+}
+
+/* Pastikan scroll-container tidak block centering */
+scroll-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.scroll_container {
+    width: 100%;
 }
 
 .header_title {
