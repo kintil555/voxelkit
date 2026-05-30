@@ -8,20 +8,18 @@ main {
     padding-bottom: 40px;
     min-width: unset !important;
     width: 100% !important;
-    max-width: 640px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
     box-sizing: border-box;
 }
 
-scroll-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.scroll_container {
+/* Constrain konten di dalam block, bukan block-nya */
+.main_title_area,
+.main_block_content,
+.main-header {
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
     width: 100%;
+    box-sizing: border-box;
 }
 
 /* ─── Header ─── */
