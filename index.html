@@ -168,6 +168,8 @@ function pgWelcome() {
                     Skin 4D menggunakan geometry kustom — bukan humanoid standar. Dibuat di
                     <a href="https://web.blockbench.net/" target="_blank">Blockbench</a>
                     dan bisa punya tulang tambahan seperti ekor, sayap, tanduk, telinga hewan, dll.
+                    <br><br>
+                    ⚠️ <strong>Install via <code>premium_cache/skin_packs</code></strong> — bukan .mcpack biasa, karena Mojang sudah menonaktifkan custom geometry di skin pack normal.
                 </article_note>
             </article_block>
         </div>
@@ -578,11 +580,34 @@ function pgPreview() {
     </div>
 
     <div class="main main_block">
+        <div class="main-header">Cara Install</div>
         <div class="main_block_content">
-            <article_note>
-                Setelah download, rename file dari <code>.zip</code> ke <code>.mcpack</code> untuk langsung install di Minecraft Bedrock.
-            </article_note>
-            <div class="btn_group" style="margin-top:8px;">
+            <article_block>
+                <article_list_title>🤖 Android</article_list_title>
+                <article_list>Extract ZIP, pindahkan folder pack ke:</article_list>
+                <article_list><code>Minecraft/premium_cache/skin_packs/</code></article_list>
+                <article_list>Restart Minecraft → Marketplace → Skins → cari pack kamu</article_list>
+
+                <article_list_title>🪟 Windows</article_list_title>
+                <article_list>Buka Run (<code>Win+R</code>), ketik lalu Enter:</article_list>
+                <article_list><code style="font-size:10px;">%localappdata%\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\premium_cache\skin_packs</code></article_list>
+                <article_list>Hapus isi lama di folder <code>skin_packs</code>, lalu paste folder pack kamu. Restart MC.</article_list>
+
+                <article_list_title>🍎 iOS / iPadOS</article_list_title>
+                <article_list>Extract ZIP, pindahkan folder pack ke:</article_list>
+                <article_list><code>On My iPhone/Minecraft/internal/premium_cache/skin_packs/</code></article_list>
+
+                <article_note>
+                    ⚠️ Skin 4D <strong>tidak bisa diinstall via .mcpack</strong> — Mojang sudah menonaktifkan custom geometry di skin pack biasa.
+                    Pack ini wajib masuk ke <code>premium_cache/skin_packs</code> agar geometry 4D-nya bisa terbaca game.
+                </article_note>
+            </article_block>
+        </div>
+    </div>
+
+    <div class="main main_block">
+        <div class="main_block_content">
+            <div class="btn_group" style="margin-top:4px;">
                 <button class="btn large_btn green_btn" id="gen_btn" onclick="generateZip()">Generate &amp; Download ZIP</button>
                 <button class="btn large_btn normal_btn" onclick="nav('skins_list')">Kembali Edit Skin</button>
             </div>
@@ -625,7 +650,7 @@ async function generateZip() {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob); a.download = fn+'.zip';
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        pop('🎉 Download berhasil! Rename .zip → .mcpack untuk install.', 'success');
+        pop('🎉 Download berhasil! Extract ZIP lalu pindahkan foldernya ke premium_cache/skin_packs.', 'success');
         if (btn) { btn.disabled=false; btn.textContent='✅ Download Lagi'; btn.classList.remove('disabled_btn'); btn.classList.add('green_btn'); }
     } catch(err) {
         pop('❌ Gagal generate: '+err.message, 'error');
@@ -639,14 +664,18 @@ async function generateZip() {
 function showAbout() {
     showModal('ℹ️ Tentang Skin 4D',
         `<div style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.8;">
-            <strong style="color:#6CC349;">Skin 4D Minecraft Bedrock</strong> adalah skin dengan custom geometry, sehingga karakter memiliki bagian tubuh ekstra:<br>
+            <strong style="color:#6CC349;">Skin 4D Minecraft Bedrock</strong> adalah skin dengan custom geometry, sehingga karakter punya bagian tubuh ekstra:
             <div style="margin:8px 0 8px 12px;font-size:12px;color:rgba(255,255,255,0.6);line-height:2;">
                 🐾 Ekor, telinga, cakar &nbsp;•&nbsp; 🐲 Sayap naga, tanduk<br>
                 🐍 Tubuh ular &nbsp;•&nbsp; 🐇 Telinga kelinci &nbsp;•&nbsp; 👼 Halo & sayap
             </div>
-            <strong style="color:#FFE866;">Format Skin Pack Bedrock:</strong>
-            <div style="margin:4px 0 0 12px;font-size:11px;font-family:monospace;color:rgba(255,255,255,0.5);line-height:2;">
-                manifest.json &nbsp;•&nbsp; skins.json &nbsp;•&nbsp; geometry.json &nbsp;•&nbsp; *.png
+            <strong style="color:#FFE866;">Cara Install (wajib baca!):</strong>
+            <div style="margin:6px 0 0 12px;font-size:12px;color:rgba(255,255,255,0.55);line-height:2;">
+                ⚠️ <em>Tidak bisa</em> pakai .mcpack — Mojang sudah memblokir custom geometry di skin pack biasa.<br>
+                Harus diletakkan di folder <code style="font-size:11px;">premium_cache/skin_packs</code> di dalam data game.<br><br>
+                🤖 <strong>Android:</strong> <code style="font-size:11px;">Minecraft/premium_cache/skin_packs/</code><br>
+                🪟 <strong>Windows:</strong> Run → <code style="font-size:11px;">%localappdata%\\...\\premium_cache\\skin_packs</code><br>
+                🍎 <strong>iOS:</strong> <code style="font-size:11px;">On My iPhone/Minecraft/internal/premium_cache/skin_packs/</code>
             </div>
         </div>`,
         [{label:'Mengerti', cls:'green_btn', fn:closeModal}]
