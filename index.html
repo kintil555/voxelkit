@@ -701,6 +701,217 @@ function readDataUrl(f, cb) { const r=new FileReader(); r.onload=e=>cb(e.target.
 function toAB(f) { return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsArrayBuffer(f); }); }
 
 // ═══════════════════════════════════════════
+//  NAVIGATION HELPERS
+// ═══════════════════════════════════════════
+function openBlockbench() {
+    window.open('https://web.blockbench.net/', '_blank');
+}
+
+function useBuiltin() {
+    S.geometryFile = null;
+    S.geometryData = null;
+    nav('pack_settings');
+}
+
+// ═══════════════════════════════════════════
+//  GEOMETRY HELPERS
+// ═══════════════════════════════════════════
+function geoNames() {
+    if (!S.geometryData) return [];
+    return Object.keys(S.geometryData).filter(k => k !== 'format_version');
+}
+
+function onGeoFile(file) {
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = e => {
+        try {
+            S.geometryData = JSON.parse(e.target.result);
+            S.geometryFile = file;
+            pop('✅ Geometry berhasil dimuat: ' + geoNames().length + ' model', 'success');
+            pgUploadGeo();
+        } catch(err) {
+            pop('❌ File geometry.json tidak valid: ' + err.message, 'error');
+        }
+    };
+    r.readAsText(file);
+}
+
+function onGeoDrop(event) {
+    event.preventDefault();
+    document.getElementById('geo_dz').classList.remove('ore_dropzone_hover');
+    const file = event.dataTransfer.files[0];
+    if (file && file.name.endsWith('.json')) onGeoFile(file);
+    else pop('❌ Hanya file .json yang diterima', 'error');
+}
+
+// ═══════════════════════════════════════════
+//  PACK SETTINGS
+// ═══════════════════════════════════════════
+function savePackSettings() {
+    const name = document.getElementById('f_name')?.value?.trim();
+    const ser  = document.getElementById('f_ser')?.value?.trim();
+    const loc  = document.getElementById('f_loc')?.value?.trim();
+    if (!name) { pop('❌ Nama pack tidak boleh kosong', 'error'); return; }
+    if (!ser)  { pop('❌ Serialize name tidak boleh kosong', 'error'); return; }
+    if (!loc)  { pop('❌ Localization name tidak boleh kosong', 'error'); return; }
+    S.packName = name;
+    S.serializeName = ser;
+    S.localizationName = loc;
+    nav('upload_geo');
+}
+
+// ═══════════════════════════════════════════
+//  SKIN MANAGEMENT
+// ═══════════════════════════════════════════
+function newEditBuf() {
+    return {
+        locName: '',
+        geometry: GEOMS[0][0],
+        customGeo: '',
+        texFile: null,
+        texPrev: null,
+        capeFile: null,
+        capePrev: null,
+        type: 'free',
+        anim: null,
+    };
+}
+
+function startAdd() {
+    S.editIdx = -1;
+    S.editBuf = newEditBuf();
+    nav('add_skin');
+}
+
+function editSkin(i) {
+    S.editIdx = i;
+    S.editBuf = Object.assign({}, S.skins[i]);
+    nav('add_skin');
+}
+
+function delSkin(i) {
+    showModal('🗑 Hapus Skin', `<div style="font-size:13px;color:rgba(255,255,255,0.8);">Hapus skin <strong>${esc(S.skins[i].locName || 'ini')}</strong>?</div>`,
+        [
+            { label: 'Hapus', cls: 'red_btn', fn: () => { S.skins.splice(i, 1); closeModal(); nav('skins_list', false); } },
+            { label: 'Batal', cls: 'normal_btn', fn: closeModal }
+        ]
+    );
+}
+
+function saveSkin() {
+    const b = S.editBuf;
+    if (!b.locName.trim()) { pop('❌ Localization name tidak boleh kosong', 'error'); return; }
+    if (!b.texFile) { pop('❌ Texture skin wajib diupload', 'error'); return; }
+    const finalGeo = b.geometry === '__custom__' ? (b.customGeo || '').trim() : b.geometry;
+    if (!finalGeo) { pop('❌ Geometry tidak boleh kosong', 'error'); return; }
+    const skin = Object.assign({}, b, { geometry: finalGeo });
+    if (S.editIdx >= 0) {
+        S.skins[S.editIdx] = skin;
+        pop('✅ Skin diperbarui!', 'success');
+    } else {
+        S.skins.push(skin);
+        pop('✅ Skin ditambahkan!', 'success');
+    }
+    nav('skins_list');
+}
+
+function toggleAnim() {
+    const b = S.editBuf;
+    b.anim = b.anim ? null : { controller: 'animation.humanoid.move', initial: ['animation.humanoid.move'] };
+    const cb = document.getElementById('anim_cb');
+    if (cb) cb.className = 'custom-checkbox ' + (b.anim ? 'on' : '');
+}
+
+function rmCape() {
+    S.editBuf.capeFile = null;
+    S.editBuf.capePrev = null;
+    pgAddSkin();
+}
+
+function onGeoSel(val) {
+    S.editBuf.geometry = val;
+    const field = document.getElementById('custom_geo_field');
+    if (field) field.style.display = val === '__custom__' ? '' : 'none';
+}
+
+// ═══════════════════════════════════════════
+//  TEXTURE / CAPE FILE HANDLERS
+// ═══════════════════════════════════════════
+function onTexFile(file) {
+    if (!file) return;
+    S.editBuf.texFile = file;
+    readDataUrl(file, url => {
+        S.editBuf.texPrev = url;
+        const dz = document.getElementById('tex_dz');
+        if (dz) {
+            dz.classList.add('ore_dropzone_ok');
+            dz.innerHTML = `
+                <img src="${url}" class="dz_mini_img">
+                <div class="dz_mini_info">
+                    <div class="dz_label" style="color:#6CC349;">${esc(file.name)}</div>
+                    <div class="dz_sub">Klik untuk ganti</div>
+                </div>`;
+        }
+    });
+}
+
+function onTexDrop(event) {
+    event.preventDefault();
+    document.getElementById('tex_dz').classList.remove('ore_dropzone_hover');
+    const file = event.dataTransfer.files[0];
+    if (file && file.type === 'image/png') onTexFile(file);
+    else pop('❌ Hanya file PNG yang diterima', 'error');
+}
+
+function onCapeFile(file) {
+    if (!file) return;
+    S.editBuf.capeFile = file;
+    readDataUrl(file, url => {
+        S.editBuf.capePrev = url;
+        const dz = document.getElementById('cape_dz');
+        if (dz) {
+            dz.classList.add('ore_dropzone_ok');
+            dz.innerHTML = `
+                <img src="${url}" class="dz_mini_img">
+                <div class="dz_mini_info">
+                    <div class="dz_label" style="color:#6CC349;">${esc(file.name)}</div>
+                    <div class="dz_sub">Klik untuk ganti</div>
+                </div>`;
+        }
+    });
+}
+
+function onCapeDrop(event) {
+    event.preventDefault();
+    document.getElementById('cape_dz').classList.remove('ore_dropzone_hover');
+    const file = event.dataTransfer.files[0];
+    if (file && file.type === 'image/png') onCapeFile(file);
+    else pop('❌ Hanya file PNG yang diterima', 'error');
+}
+
+// ═══════════════════════════════════════════
+//  TAGS (pill badges on skin list)
+// ═══════════════════════════════════════════
+// Pastikan class tag ada di stylesheet (fallback inline jika belum)
+(function injectTagStyles() {
+    if (document.getElementById('_tag_styles')) return;
+    const s = document.createElement('style');
+    s.id = '_tag_styles';
+    s.textContent = `
+        .tag{display:inline-block;font-size:10px;padding:1px 6px;font-family:"NotoSans Bold",sans-serif;border-radius:2px;}
+        .green_tag{background:rgba(108,195,73,0.25);color:#6CC349;}
+        .yellow_tag{background:rgba(255,232,102,0.2);color:#FFE866;}
+        .blue_tag{background:rgba(46,107,229,0.25);color:#7EB4FF;}
+        .red_tag{background:rgba(244,109,109,0.2);color:#F46D6D;}
+        .black_tag{background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);}
+        .custom-checkbox{width:20px;height:20px;border:2px solid #58585A;background:#1E1E1F;flex-shrink:0;}
+        .custom-checkbox.on{background:#3C8527;border-color:#3C8527;}
+    `;
+    document.head.appendChild(s);
+})();
+
+// ═══════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {

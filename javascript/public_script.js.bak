@@ -115,7 +115,10 @@ if (hostPath.includes('file:///')) {
     document.addEventListener('contextmenu', function (event) {
         event.preventDefault();
     });
-    // NOTE: touchstart preventDefault dihapus — memblokir semua klik/tap di halaman
+    // 禁用长按菜单
+    document.addEventListener('touchstart', function (event) {
+        event.preventDefault();
+    });
 }
 if (rootPath.includes('_test')) {
     document.body.classList.add('test');
