@@ -3,7 +3,7 @@
  * Built on top of OreUI by Spectrollay
  */
 
-/* ─── Center konten dengan max-width ─── */
+/* ─── Layout centering ─── */
 main {
     padding-bottom: 40px;
     min-width: unset !important;
@@ -14,7 +14,6 @@ main {
     box-sizing: border-box;
 }
 
-/* Pastikan scroll-container tidak block centering */
 scroll-container {
     display: flex;
     flex-direction: column;
@@ -25,6 +24,7 @@ scroll-container {
     width: 100%;
 }
 
+/* ─── Header ─── */
 .header_title {
     font-family: "Minecraft Ten", sans-serif;
     font-size: 17px !important;
@@ -32,12 +32,53 @@ scroll-container {
     letter-spacing: 0.5px;
 }
 
-/* ─── OreUI Input ─── */
+/* ─── main_title overrides ─── */
+.main_title_span {
+    font-size: 13px;
+    color: rgba(255,255,255,0.45);
+    font-family: "NotoSans Bold", sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.main_title_span_main {
+    font-family: "Minecraft Seven", sans-serif;
+    font-size: 22px;
+    margin-top: 4px;
+}
+
+.main_title_span_sub {
+    font-family: "NotoSans Bold", sans-serif;
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+}
+
+/* ─── footer_info ─── */
+.footer_info {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+    padding: 16px 0;
+    font-family: "NotoSans Bold", sans-serif;
+}
+
+/* ─── main-header (section label) ─── */
+.main-header {
+    font-family: "Minecraft Five Bold", sans-serif !important;
+    font-size: 11px !important;
+    color: rgba(255,255,255,0.4) !important;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 8px 16px !important;
+}
+
+/* ─── Input fields ─── */
 .ore_input {
     background-color: #D0D1D4;
     border: 2px solid #1E1E1F;
     box-shadow: inset 0 -3px #58585A, inset 2px 2px rgba(255,255,255,0.5);
-    color: #000000;
+    color: #000;
     font-family: "NotoSans Bold", sans-serif;
     font-size: 14px;
     height: 38px;
@@ -48,17 +89,13 @@ scroll-container {
     outline: none;
     transition: box-shadow 0.15s;
 }
-
 .ore_input:focus {
     box-shadow: inset 0 -3px #2E6BE5, inset 2px 2px rgba(255,255,255,0.5);
     background-color: #E6E8EB;
 }
+.ore_input::placeholder { color: #58585A; }
 
-.ore_input::placeholder {
-    color: #58585A;
-}
-
-/* ─── OreUI Select ─── */
+/* ─── Select ─── */
 .ore_select {
     appearance: none;
     -webkit-appearance: none;
@@ -68,7 +105,7 @@ scroll-container {
     background-position: right 10px center;
     border: 2px solid #1E1E1F;
     box-shadow: inset 0 -3px #58585A, inset 2px 2px rgba(255,255,255,0.5);
-    color: #000000;
+    color: #000;
     cursor: pointer;
     font-family: "NotoSans Bold", sans-serif;
     font-size: 13px;
@@ -79,39 +116,47 @@ scroll-container {
     box-sizing: border-box;
     outline: none;
 }
-
 .ore_select:focus {
     box-shadow: inset 0 -3px #2E6BE5, inset 2px 2px rgba(255,255,255,0.5);
     background-color: #E6E8EB;
 }
+.ore_select option { background-color: #E6E8EB; color: #000; }
 
-.ore_select option {
-    background-color: #E6E8EB;
-    color: #000000;
-    font-size: 13px;
-}
-
-/* ─── Setting Row ─── */
-.setting_row {
-    margin-bottom: 14px;
-}
-
-.setting_label {
+/* ─── Field group ─── */
+.ore_field_group { display: flex; flex-direction: column; gap: 4px; }
+.ore_field { margin-bottom: 12px; }
+.ore_label {
     display: block;
     font-family: "NotoSans Bold", sans-serif;
     font-size: 13px;
     color: rgba(255,255,255,0.9);
     margin-bottom: 2px;
 }
+.ore_required { color: #F46D6D; }
+.ore_optional { color: rgba(255,255,255,0.4); font-size: 11px; }
+.ore_hint { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
 
-.setting_hint {
-    font-size: 11px;
-    color: rgba(255,255,255,0.4);
-    margin-top: 2px;
+/* ─── Radio ─── */
+.ore_radio {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+}
+.ore_radio input[type="radio"] { accent-color: #3C8527; cursor: pointer; width: 16px; height: 16px; }
+
+/* ─── Checkbox row ─── */
+.ore_checkbox_row {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 6px 0;
 }
 
-/* ─── Upload Zone ─── */
-.upload_zone {
+/* ─── Dropzone ─── */
+.ore_dropzone {
     align-items: center;
     background-color: rgba(255,255,255,0.05);
     border: 2px dashed #58585A;
@@ -126,313 +171,93 @@ scroll-container {
     text-align: center;
     transition: border-color 0.2s, background-color 0.2s;
     width: 100%;
-}
-
-.upload_zone:hover,
-.upload_zone_hover {
-    background-color: rgba(46,107,229,0.08);
-    border-color: #2E6BE5;
-}
-
-.upload_zone_success {
-    background-color: rgba(108,195,73,0.08);
-    border-color: #6CC349;
-    border-style: solid;
-}
-
-.upload_icon {
-    font-size: 40px;
-}
-
-.upload_label {
-    font-size: 14px;
-    color: rgba(255,255,255,0.7);
-}
-
-.upload_sub {
-    font-size: 11px;
-    color: rgba(255,255,255,0.4);
-}
-
-.upload_success_icon {
-    font-size: 32px;
-}
-
-.upload_filename {
-    font-size: 13px;
-    color: #6CC349;
-    word-break: break-all;
-}
-
-/* ─── Upload Zone Mini ─── */
-.upload_zone_mini {
-    align-items: center;
-    background-color: rgba(255,255,255,0.05);
-    border: 2px dashed #58585A;
-    box-sizing: border-box;
-    cursor: pointer;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px;
-    min-height: 54px;
-    padding: 8px 12px;
-    transition: border-color 0.2s, background-color 0.2s;
-    width: 100%;
     margin: 4px 0;
 }
-
-.upload_zone_mini:hover,
-.upload_zone_mini.upload_zone_hover {
+.ore_dropzone:hover, .ore_dropzone_hover {
     background-color: rgba(46,107,229,0.08);
     border-color: #2E6BE5;
 }
-
-.upload_zone_mini.upload_zone_success {
+.ore_dropzone_ok {
     background-color: rgba(108,195,73,0.08);
     border-color: #6CC349;
     border-style: solid;
 }
 
-.upload_icon_mini { font-size: 22px; }
-.upload_label_mini { font-size: 13px; color: rgba(255,255,255,0.6); }
-.upload_filename_mini { font-size: 12px; color: #6CC349; word-break: break-all; }
-.upload_sub_mini { font-size: 11px; color: rgba(255,255,255,0.4); }
-
-.upload_preview_img {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-    image-rendering: pixelated;
-    border: 1px solid rgba(255,255,255,0.1);
-}
-
-/* ─── Skin Card ─── */
-.skin_card {
-    align-items: center;
-    background-color: rgba(255,255,255,0.04);
-    border-bottom: 2px solid #333334;
-    border-left: 2px solid #333334;
-    border-right: 2px solid #333334;
-    border-top: 2px solid #5A5B5C;
-    display: flex;
+/* Dropzone mini (inline) */
+.ore_dropzone_mini {
+    flex-direction: row;
+    min-height: 54px;
+    padding: 8px 12px;
     gap: 10px;
-    margin-bottom: 8px;
-    padding: 10px;
+    justify-content: flex-start;
 }
 
-.skin_card_preview {
-    align-items: center;
-    background-color: #1E1E1F;
-    border: 2px solid #333334;
-    display: flex;
-    flex-shrink: 0;
-    height: 52px;
-    justify-content: center;
-    width: 52px;
-}
-
-.skin_card_info {
-    flex: 1;
-    min-width: 0;
-}
-
-.skin_card_name {
-    font-family: "Minecraft Seven", sans-serif;
-    font-size: 14px;
-    color: #FFFFFF;
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.skin_card_geo {
-    font-size: 11px;
-    color: rgba(255,255,255,0.45);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-bottom: 5px;
-}
-
-.skin_card_tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.skin_card_actions {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+.dz_icon { font-size: 36px; }
+.dz_label { font-size: 14px; color: rgba(255,255,255,0.7); }
+.dz_sub { font-size: 11px; color: rgba(255,255,255,0.4); }
+.dz_mini_img {
+    width: 40px; height: 40px;
+    object-fit: contain; image-rendering: pixelated;
+    border: 1px solid rgba(255,255,255,0.1);
     flex-shrink: 0;
 }
+.dz_mini_info { text-align: left; }
 
-/* ─── Tags ─── */
-.tag {
-    border-radius: 0;
-    font-size: 10px;
-    font-family: "Minecraft Five", sans-serif;
-    padding: 2px 5px;
-}
-
-.tag_green { background-color: #6CC349; color: #000; }
-.tag_yellow { background-color: #FFE866; color: #000; }
-.tag_blue { background-color: #8CB3FF; color: #000; }
-.tag_red { background-color: #F46D6D; color: #fff; }
-.tag_purple { background-color: #B47AE8; color: #fff; }
-
-/* ─── Skin Preview Grid ─── */
-.skin_preview_grid {
+/* ─── Summary rows ─── */
+.ore_summary_row {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    font-size: 13px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
 }
+.ore_sum_k { color: rgba(255,255,255,0.5); width: 120px; flex-shrink: 0; font-family: "NotoSans Bold", sans-serif; }
+.ore_sum_v { color: rgba(255,255,255,0.9); word-break: break-all; }
 
-.skin_preview_card {
+/* ─── Skin grid (preview page) ─── */
+.ore_skin_grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.ore_skin_tile {
     align-items: center;
     background-color: #1E1E1F;
     border: 2px solid #333334;
     display: flex;
     flex-direction: column;
-    gap: 4px;
     padding: 6px;
     width: 60px;
 }
 
-/* ─── Summary ─── */
-.summary_row {
-    display: flex;
-    font-size: 13px;
-    padding: 3px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.sum_key {
-    color: rgba(255,255,255,0.5);
-    width: 130px;
-    flex-shrink: 0;
-}
-
-.sum_val {
-    color: rgba(255,255,255,0.9);
-    word-break: break-all;
-}
-
-/* ─── Radio + Checkbox ─── */
-.radio_label {
+/* ─── Skin thumb (list) ─── */
+.ore_skin_thumb {
     align-items: center;
-    color: rgba(255,255,255,0.8);
-    cursor: pointer;
-    display: flex;
-    font-size: 13px;
-    gap: 6px;
-}
-
-.radio_label input[type="radio"] {
-    accent-color: #3C8527;
-    cursor: pointer;
-    width: 16px;
-    height: 16px;
-}
-
-.checkbox_label {
-    align-items: center;
-    cursor: pointer;
-    display: flex;
-    flex-direction: row;
-}
-
-/* ─── Modal ─── */
-.modal_wrapper {
-    align-items: center;
-    bottom: 0;
-    display: flex;
-    justify-content: center;
-    left: 0;
-    padding: 20px;
-    position: fixed;
-    right: 0;
-    top: 0;
-    z-index: 100;
-    box-sizing: border-box;
-    pointer-events: none;
-}
-
-.modal_box {
-    background-color: #2E2E30;
-    border-bottom: 2px solid #333334;
-    border-left: 2px solid #333334;
-    border-right: 2px solid #333334;
-    border-top: 2px solid #5A5B5C;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-    max-height: 80vh;
-    max-width: 480px;
-    overflow-y: auto;
-    padding: 20px;
-    pointer-events: all;
-    width: 100%;
-}
-
-.modal_title {
-    color: #FFFFFF;
-    font-family: "Minecraft Seven", sans-serif;
-    font-size: 18px;
-    margin-bottom: 14px;
-}
-
-.modal_body {
-    margin-bottom: 16px;
-}
-
-.modal_actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: flex-end;
-}
-
-/* ─── Toast ─── */
-.toast_container {
     background-color: #1E1E1F;
-    border: 2px solid #58585A;
-    bottom: 24px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-    color: #FFFFFF;
-    font-family: "NotoSans Bold", sans-serif;
-    font-size: 13px;
-    left: 50%;
-    max-width: 360px;
-    opacity: 0;
-    padding: 12px 18px;
-    position: fixed;
-    transform: translateX(-50%) translateY(20px);
-    transition: opacity 0.3s, transform 0.3s;
-    z-index: 200;
-    pointer-events: none;
+    border: 2px solid #333334;
+    display: flex;
+    flex-shrink: 0;
+    height: 48px;
+    justify-content: center;
+    width: 48px;
 }
 
-.toast_container.toast_show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+/* ─── Link btn (text button) ─── */
+.ore_link_btn {
+    background: none;
+    border: none;
+    color: #F46D6D;
+    font-family: "NotoSans Bold", sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 3px 0;
 }
 
 /* ─── code tag ─── */
 code {
-    font-family: monospace;
-    font-size: 0.9em;
+    font-family: "Minecraft Five", monospace;
+    font-size: 0.85em;
+    background: rgba(255,255,255,0.1);
+    padding: 1px 4px;
 }
 
-/* ─── Responsive ─── */
-@media (max-width: 480px) {
-    .skin_card_name {
-        font-size: 12px;
-    }
-    .modal_box {
-        padding: 14px;
-    }
-    .sum_key {
-        width: 100px;
-    }
+/* ─── btn_group column ─── */
+.btn_group {
+    flex-direction: column;
+    gap: 4px;
 }
