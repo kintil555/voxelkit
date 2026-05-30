@@ -3,82 +3,22 @@
  * Built on top of OreUI by Spectrollay
  */
 
-/* ─── Override display-area to allow scroll ─── */
-display-area {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-}
-
-display-body {
-    flex: 1;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-}
-
-scroll-view {
+/* ─── Biarkan OreUI handle layout, hanya override yang perlu ─── */
+dispaly-area {
     height: 100%;
-    overflow: hidden;
-    justify-content: center;
-}
-
-scroll-container {
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-width: thin;
-    scrollbar-color: #58585A #333334;
-    max-width: 600px;
-    width: 100%;
-    flex: none !important;
-}
-
-scroll-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-scroll-container::-webkit-scrollbar-track {
-    background: #333334;
-}
-
-scroll-container::-webkit-scrollbar-thumb {
-    background: #58585A;
-    border-radius: 0;
 }
 
 main {
     padding-bottom: 40px;
-    min-height: 100%;
-    width: 100% !important;
     min-width: unset !important;
     box-sizing: border-box;
 }
 
-/* ─── Header tweaks ─── */
-header {
-    flex-shrink: 0;
-    min-width: unset !important;
-}
-
 .header_title {
-    font-size: 18px !important;
+    font-family: "Minecraft Ten", sans-serif;
+    font-size: 17px !important;
+    color: #1E1E1F;
     letter-spacing: 0.5px;
-}
-
-
-/* ─── Loading Mask ─── */
-.loading_mask {
-    align-items: center;
-    background-color: #48494A;
-    display: flex;
-    height: 100vh;
-    justify-content: center;
-    left: 0;
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 9999;
 }
 
 /* ─── OreUI Input ─── */

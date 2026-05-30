@@ -6,6 +6,7 @@
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <link href="./stylesheet/loading_mask.css" rel="stylesheet">
+    <link href="./stylesheet/public_style.css" rel="stylesheet">
     <link href="./stylesheet/oreui.css" rel="stylesheet">
     <link href="./stylesheet/app.css" rel="stylesheet">
     <title>BE Skin 4D Maker</title>
@@ -21,20 +22,15 @@
 <body>
 <dispaly-area>
     <header>
-        <div class="header_left">
-            <div class="header_item header_item_left" id="btn_back" onclick="goBack()" style="display:none;cursor:pointer;">
-                <span class="header_left_icon" style="font-size:20px;padding:0 10px;">‹</span>
-            </div>
+        <div class="header_item header_item_left" id="btn_back" onclick="goBack()" style="display:none;cursor:pointer;">
+            <span class="header_left_icon" style="font-size:20px;padding:0 10px;">‹</span>
         </div>
+        <div class="header_item header_item_left header_item_blank" id="btn_back_placeholder"></div>
         <div class="header_logo">
-            <div class="header_title" style="font-family:'Minecraft Ten',sans-serif;font-size:17px;color:#1E1E1F;letter-spacing:0.5px;">
-                ⛏ BE Skin 4D Maker
-            </div>
+            <div class="header_title">⛏ BE Skin 4D Maker</div>
         </div>
-        <div class="header_right">
-            <div class="header_item header_item_right" onclick="showAbout()" style="cursor:pointer;">
-                <img alt="info" class="header_right_icon" src="./images/Github.png" style="height:24px;width:24px;object-fit:contain;"/>
-            </div>
+        <div class="header_item header_item_right" onclick="showAbout()" style="cursor:pointer;">
+            <img alt="info" class="header_right_icon" src="./images/Github.png"/>
         </div>
     </header>
 
@@ -118,7 +114,9 @@ function nav(page, addHist=true) {
     if (addHist && S.page !== page) S.history.push(S.page);
     S.page = page;
     renderPage();
-    document.getElementById('btn_back').style.display = S.history.length ? 'flex' : 'none';
+    const showBack = S.history.length > 0;
+    document.getElementById('btn_back').style.display = showBack ? 'flex' : 'none';
+    document.getElementById('btn_back_placeholder').style.display = showBack ? 'none' : 'flex';
     const sc = document.getElementById('scroll_root');
     if (sc) sc.scrollTop = 0;
 }
@@ -127,7 +125,9 @@ function goBack() {
     if (!S.history.length) return;
     S.page = S.history.pop();
     renderPage();
-    document.getElementById('btn_back').style.display = S.history.length ? 'flex' : 'none';
+    const showBack = S.history.length > 0;
+    document.getElementById('btn_back').style.display = showBack ? 'flex' : 'none';
+    document.getElementById('btn_back_placeholder').style.display = showBack ? 'none' : 'flex';
 }
 
 function renderPage() {
@@ -845,5 +845,9 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 700);
 });
 </script>
+<script src="./javascript/loading.js"></script>
+<script src="./library/accessibility.js"></script>
+<script src="./javascript/public_script.js"></script>
+<script src="./javascript/oreui.js"></script>
 </body>
 </html>
