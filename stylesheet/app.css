@@ -59,6 +59,8 @@ main {
 header {
     flex-shrink: 0;
     min-width: unset !important;
+    display: block !important;
+    padding: 0;
 }
 
 .header_title {
@@ -74,22 +76,35 @@ header {
     max-width: 600px;
     width: 100%;
     margin: 0 auto;
-    height: 100%;
+    height: 40px;
     position: relative;
 }
 
-/* Override OreUI header_logo absolute positioning — sekarang center di dalam wrapper */
+/* Override OreUI header_logo — absolute relatif ke wrapper */
 .header_center_wrap .header_logo {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     pointer-events: none;
+    width: auto;
+    flex: none;
 }
 
 .header_center_wrap .header_left,
 .header_center_wrap .header_right {
+    display: flex;
+    align-items: center;
+    height: 40px;
     position: relative;
     z-index: 2;
+}
+
+.header_center_wrap .header_item_left,
+.header_center_wrap .header_item_right {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* ─── Loading Mask ─── */
