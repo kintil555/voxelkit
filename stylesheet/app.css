@@ -13,11 +13,14 @@ display-area {
 display-body {
     flex: 1;
     overflow: hidden;
+    display: flex;
+    justify-content: center;
 }
 
 scroll-view {
     height: 100%;
     overflow: hidden;
+    justify-content: center;
 }
 
 scroll-container {
@@ -26,6 +29,9 @@ scroll-container {
     overflow-x: hidden;
     scrollbar-width: thin;
     scrollbar-color: #58585A #333334;
+    max-width: 600px;
+    width: 100%;
+    flex: none !important;
 }
 
 scroll-container::-webkit-scrollbar {
@@ -44,16 +50,46 @@ scroll-container::-webkit-scrollbar-thumb {
 main {
     padding-bottom: 40px;
     min-height: 100%;
+    width: 100% !important;
+    min-width: unset !important;
+    box-sizing: border-box;
 }
 
 /* ─── Header tweaks ─── */
 header {
     flex-shrink: 0;
+    min-width: unset !important;
 }
 
 .header_title {
     font-size: 18px !important;
     letter-spacing: 0.5px;
+}
+
+/* ─── Header centering wrapper ─── */
+.header_center_wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    height: 100%;
+    position: relative;
+}
+
+/* Override OreUI header_logo absolute positioning — sekarang center di dalam wrapper */
+.header_center_wrap .header_logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.header_center_wrap .header_left,
+.header_center_wrap .header_right {
+    position: relative;
+    z-index: 2;
 }
 
 /* ─── Loading Mask ─── */
