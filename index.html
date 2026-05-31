@@ -72,6 +72,7 @@
 <div class="pop_area" id="pop_area"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/skinview3d@3.4.1/bundles/skinview3d.bundle.js"></script>
 <script>
 // ═══════════════════════════════════════════
 //  STATE
@@ -136,6 +137,7 @@ function renderPage() {
         welcome: pgWelcome, check_model: pgCheckModel,
         pack_settings: pgPackSettings, upload_geo: pgUploadGeo,
         skins_list: pgSkinsList, add_skin: pgAddSkin, preview: pgPreview,
+        skin_preview: pgSkinPreview,
     };
     (pages[S.page] || pgWelcome)();
 }
@@ -349,6 +351,7 @@ function pgSkinsList() {
         <div class="main_block_content">
             <div class="btn_group">
                 <button class="btn large_btn green_btn" onclick="startAdd()">Tambah Skin Baru</button>
+                <button class="btn large_btn normal_btn" onclick="nav('skin_preview')" style="font-size:13px;">👁 Preview 3D Skin</button>
             </div>
         </div>
     </div>
@@ -387,6 +390,7 @@ function pgSkinsList() {
                         </div>
                         <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
                             <button class="btn extra_small_btn normal_btn" style="height:30px;font-size:12px;" onclick="editSkin(${i})">Edit</button>
+                            <button class="btn extra_small_btn normal_btn" style="height:30px;font-size:11px;background:rgba(46,107,229,0.3);border-color:#2E6BE5;color:#7EB4FF;" onclick="nav('skin_preview');setTimeout(()=>sv3dLoadSkin(${i}),150)">👁 3D</button>
                             <button class="btn extra_small_btn red_btn" style="height:30px;font-size:12px;" onclick="delSkin(${i})">Hapus</button>
                         </div>
                     </div>
@@ -610,6 +614,7 @@ function pgPreview() {
         <div class="main_block_content">
             <div class="btn_group" style="margin-top:4px;">
                 <button class="btn large_btn green_btn" id="gen_btn" onclick="generateZip()">Generate &amp; Download ZIP</button>
+                <button class="btn large_btn normal_btn" onclick="nav('skin_preview')" style="font-size:13px;">👁 Preview 3D Skin</button>
                 <button class="btn large_btn normal_btn" onclick="nav('skins_list')">Kembali Edit Skin</button>
             </div>
         </div>
@@ -958,5 +963,6 @@ window.addEventListener('DOMContentLoaded', () => {
 <script src="./javascript/public_script.js"></script>
 <script src="./javascript/app_script.js"></script>
 <script src="./javascript/oreui.js"></script>
+<script src="./javascript/skin_preview.js"></script>
 </body>
 </html>
