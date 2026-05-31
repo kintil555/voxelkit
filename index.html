@@ -390,7 +390,7 @@ function pgSkinsList() {
                         </div>
                         <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
                             <button class="btn extra_small_btn normal_btn" style="height:30px;font-size:12px;" onclick="editSkin(${i})">Edit</button>
-                            <button class="btn extra_small_btn normal_btn" style="height:30px;font-size:11px;background:rgba(46,107,229,0.3);border-color:#2E6BE5;color:#7EB4FF;" onclick="nav('skin_preview');setTimeout(()=>sv3dLoadSkin(${i}),150)">👁 3D</button>
+                            <button class="btn extra_small_btn normal_btn" style="height:30px;font-size:11px;background:rgba(46,107,229,0.3);border-color:#2E6BE5;color:#7EB4FF;" onclick="nav('skin_preview');setTimeout(()=>_sv3dPickSkin(${i}),150)">👁 3D</button>
                             <button class="btn extra_small_btn red_btn" style="height:30px;font-size:12px;" onclick="delSkin(${i})">Hapus</button>
                         </div>
                     </div>

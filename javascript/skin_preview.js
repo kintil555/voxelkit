@@ -238,7 +238,8 @@ function _sv3dBoot() {
     loader.load(skin.texPrev, (tex) => {
         tex.magFilter = THREE.NearestFilter;
         tex.minFilter = THREE.NearestFilter;
-        tex.colorSpace = THREE.SRGBColorSpace || THREE.LinearEncoding;
+        // Three.js r128 pakai .encoding, bukan .colorSpace (yang baru di r152+)
+        tex.encoding = THREE.sRGBEncoding;
         _sv3d.texture = tex;
 
         _sv3dShowLoading('Membangun model...');
@@ -385,13 +386,38 @@ function _sv3dFindGeometry(geoData, targetId) {
         const id = g.description?.identifier || '';
         if (id === targetId || id.endsWith('.' + targetId.split('.').pop())) return g;
     }
-    // Fallback: format lama { "geometry.xxx": { bones: [] } }
+    // Fallback: format lama { "geometry.xxx": { texturewidth, textureheight, bones[] } }
+    const oldFormatKeys = [];
     for (const key of Object.keys(geoData)) {
         if (key === 'format_version') continue;
-        if (key === targetId) return { description: { identifier: key }, bones: geoData[key].bones || [] };
+        const val = geoData[key];
+        if (typeof val !== 'object' || !val) continue;
+        if (key === targetId) {
+            return {
+                description: {
+                    identifier: key,
+                    texture_width:  val.texturewidth  || val.texture_width  || 64,
+                    texture_height: val.textureheight || val.texture_height || 64,
+                },
+                bones: val.bones || [],
+            };
+        }
+        if (val.bones) oldFormatKeys.push(key);
     }
-    // Ambil pertama saja
+    // Ambil pertama saja — new format dulu, lalu old format
     if (list.length > 0) return list[0];
+    if (oldFormatKeys.length > 0) {
+        const k = oldFormatKeys[0];
+        const val = geoData[k];
+        return {
+            description: {
+                identifier: k,
+                texture_width:  val.texturewidth  || val.texture_width  || 64,
+                texture_height: val.textureheight || val.texture_height || 64,
+            },
+            bones: val.bones || [],
+        };
+    }
     return null;
 }
 
