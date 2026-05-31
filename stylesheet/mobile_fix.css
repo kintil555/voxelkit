@@ -1,0 +1,288 @@
+/*
+ * BE Skin 4D Maker — Mobile Responsive Fix
+ * Memperbaiki tampilan di layar kecil (handphone)
+ */
+
+/* ─── Pastikan body & html tidak overflow horizontal ─── */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    min-width: 0 !important;
+}
+
+/* ─── Hapus min-width yang bikin horizontal scroll ─── */
+main {
+    min-width: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+dispaly-area {
+    width: 100%;
+    min-width: 0;
+}
+
+header {
+    min-width: 0 !important;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.scroll_container {
+    min-width: 0 !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ─── Tombol: full-width di mobile ─── */
+@media screen and (max-width: 500px) {
+    /* Tombol large & middle jadi full-width di HP */
+    .large_btn {
+        width: calc(100% - 12px) !important;
+        max-width: 320px;
+        box-sizing: border-box;
+    }
+
+    .middle_btn {
+        width: calc(min(200px, 100% - 12px)) !important;
+        box-sizing: border-box;
+    }
+
+    /* btn_group stack vertikal kalau tidak muat */
+    .btn_group {
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        width: 100%;
+    }
+
+    /* Pastikan main_block padding tidak terlalu sempit */
+    .main_block {
+        padding: 0 8px;
+        box-sizing: border-box;
+    }
+
+    .main_block_content {
+        margin: 8px 4px;
+        box-sizing: border-box;
+    }
+
+    /* max-width content area */
+    .main_title_area,
+    .main_block_content,
+    .main-header {
+        max-width: 100% !important;
+        padding-left: 4px;
+        padding-right: 4px;
+        box-sizing: border-box;
+    }
+}
+
+/* ─── article_block: jangan overflow ─── */
+article_block {
+    min-width: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+article_note {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    font-size: 13px !important;
+    box-sizing: border-box;
+}
+
+article_list_title {
+    font-size: 14px !important;
+    word-break: break-word;
+}
+
+article_list {
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* ─── code inline: bisa wrap di mobile ─── */
+code {
+    word-break: break-all;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    display: inline;
+}
+
+/* ─── link-block: cegah overflow teks ─── */
+link-block {
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.link_title_text {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal !important;
+}
+
+.link_description {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+}
+
+/* ─── ore_field_group: full width di HP ─── */
+.ore_field_group {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ore_field {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ore_input, .ore_select {
+    width: 100% !important;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+/* ─── Dropzone: tidak overflow ─── */
+.ore_dropzone {
+    width: 100% !important;
+    box-sizing: border-box;
+    word-break: break-word;
+}
+
+.ore_dropzone_mini {
+    min-height: 54px;
+}
+
+/* ─── Summary rows: wrap di mobile ─── */
+@media screen and (max-width: 400px) {
+    .ore_summary_row {
+        flex-wrap: wrap;
+        gap: 2px;
+    }
+
+    .ore_sum_k {
+        width: 100% !important;
+        font-size: 11px;
+    }
+
+    .ore_sum_v {
+        padding-left: 4px;
+        font-size: 12px;
+    }
+}
+
+/* ─── Skin list item: wrap di layar sangat sempit ─── */
+@media screen and (max-width: 380px) {
+    .ore_skin_thumb {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+    }
+
+    /* Tombol edit/hapus di skin list */
+    .extra_small_btn {
+        width: 70px !important;
+        font-size: 11px !important;
+        padding: 0 4px !important;
+    }
+}
+
+/* ─── Modal: full-width di HP kecil ─── */
+@media screen and (max-width: 400px) {
+    modal_area {
+        min-width: 0 !important;
+        width: calc(100vw - 16px) !important;
+        max-width: calc(100vw - 16px) !important;
+        box-sizing: border-box;
+    }
+
+    .middle_btn {
+        width: calc(100% - 8px) !important;
+        min-width: 0 !important;
+    }
+}
+
+/* ─── Pop/Toast area: cegah overflow ─── */
+.pop_area {
+    width: min(92%, 460px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    bottom: 24px !important;
+    box-sizing: border-box;
+}
+
+.pop {
+    font-size: 13px !important;
+    padding: 10px 16px !important;
+    word-break: break-word;
+    text-align: center;
+}
+
+/* ─── scroll-view & custom-scrollbar ─── */
+scroll-view {
+    overflow-x: hidden !important;
+}
+
+scroll-container, .primary_scroll_container {
+    overflow-x: hidden !important;
+}
+
+/* ─── Main title: lebih kompak di mobile ─── */
+@media screen and (max-width: 480px) {
+    .main_title_span_main {
+        font-size: 18px !important;
+    }
+
+    .main_title_span_sub {
+        font-size: 12px !important;
+    }
+
+    .main_title_span {
+        font-size: 11px !important;
+    }
+}
+
+/* ─── Header title: tidak overflow ─── */
+.header_title {
+    font-size: 14px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(100vw - 100px);
+}
+
+/* ─── ore_skin_grid: lebih rapat di HP ─── */
+@media screen and (max-width: 400px) {
+    .ore_skin_grid {
+        gap: 6px;
+    }
+
+    .ore_skin_tile {
+        width: 52px;
+        padding: 4px;
+    }
+}
+
+/* ─── Install instructions: codenya bisa scroll ─── */
+article_list code {
+    display: inline-block;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre;
+    vertical-align: bottom;
+    font-size: 10px !important;
+}
+
+/* ─── Preview page summary path (Windows path panjang) ─── */
+.ore_sum_v code {
+    font-size: 9px !important;
+    display: inline-block;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre;
+}
